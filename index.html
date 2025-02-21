@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Такси Регион — Тёмная Галактика</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Подключаем шрифт Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="preload" as="style" onload="this.rel='stylesheet'">
+  <!-- Пример preload фонового изображения (заменён на брутальное звёздное небо) -->
+  <link rel="preload" as="image" href="https://images.unsplash.com/photo-1533142266415-a602f2aa4189?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80">
+
+  <style>
+    /* СБРОС СТИЛЕЙ */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      font-family: 'Montserrat', sans-serif;
+      color: #fff; /* Белый текст */
+      overflow-x: hidden;
+    }
+
+    /* Фон: звёздное небо (брутальный вариант) */
+    body {
+      /* Заменён URL на более тёмную и звёздную картинку */
+      background: url("https://images.unsplash.com/photo-1533142266415-a602f2aa4189?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80")
+                  no-repeat center center / cover;
+      animation: galaxyMove 45s linear infinite alternate;
+      position: relative;
+      filter: brightness(1.4) contrast(1.3) saturate(1.6);
+    }
+    @keyframes galaxyMove {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* Overlay для затемнения (улучшает контраст) */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: -1; /* Позади контента */
+    }
+
+    /* Фиксированная шапка (header) */
+    header {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 70px;
+      display: flex; align-items: center;
+      z-index: 999;
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.3);
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .header-container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    /* Основное меню */
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 25px;
+      position: relative;
+    }
+    nav li {
+      position: relative; /* для подменю */
+    }
+    nav li a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 5px 0;
+      transition: color 0.3s;
+    }
+    nav li a:hover {
+      color: #ffa500;
+    }
+
+    /* Подменю (dropdown) с плавной анимацией */
+    .submenu {
+      display: block;
+      position: absolute; top: 100%; left: 0;
+      background: rgba(0,0,0,0.8);
+      min-width: 180px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      padding: 10px 0;
+      opacity: 0; visibility: hidden;
+      transform: translateY(-5px);
+      transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+    }
+    .submenu li {
+      padding: 0 15px; margin: 5px 0;
+    }
+    .submenu li a {
+      color: #fff; font-size: 0.95rem;
+    }
+    .submenu li a:hover {
+      color: #ffa500;
+    }
+    /* При наведении показываем подменю */
+    nav li:hover .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    /* Бургер-меню */
+    .burger {
+      display: none; /* по умолчанию на десктопе скрыт */
+      flex-direction: column;
+      cursor: pointer;
+      gap: 5px;
+    }
+    .burger span {
+      width: 25px; height: 3px;
+      background: #fff;
+      transition: 0.4s;
+    }
+    /* Анимация бургера (когда открыт) */
+    .burger.open span:nth-child(1) {
+      transform: translateY(8px) rotate(45deg);
+    }
+    .burger.open span:nth-child(2) {
+      opacity: 0;
+    }
+    .burger.open span:nth-child(3) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+
+    /* Мобильное меню */
+    @media (max-width: 600px) {
+      nav ul {
+        display: none; /* Прячем */
+        position: absolute;
+        top: 70px; right: 20px;
+        flex-direction: column;
+        gap: 15px;
+        background: rgba(0,0,0,0.8);
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      }
+      /* При открытом бургере */
+      .burger.open + nav ul {
+        display: flex;
+      }
+      .burger {
+        display: flex;
+      }
+      /* Подменю на мобильном */
+      .submenu {
+        position: static; 
+        opacity: 1; visibility: visible;
+        transform: none; box-shadow: none; background: none;
+        padding: 0;
+      }
+      .submenu li {
+        margin: 0; padding: 0;
+      }
+    }
+
+    /* Основной контент (с отступом сверху под меню) */
+    .main-content {
+      width: 90%;
+      max-width: 1200px;
+      margin: 80px auto 0;
+      color: #fff;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+    }
+    .main-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .main-content p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      max-width: 800px;
+      margin-bottom: 30px;
+    }
+    .cta-btn {
+      display: inline-block;
+      padding: 12px 25px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .cta-btn:hover {
+      background-color: #ffa500;
+      color: #000;
+    }
+
+    /* FAQ (аккордеон) */
+    .faq-list { margin-top: 40px; }
+    .faq-item {
+      margin-bottom: 15px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .faq-question {
+      background: rgba(0,0,0,0.4);
+      cursor: pointer;
+      padding: 15px;
+      font-weight: bold;
+      position: relative;
+      transition: background-color 0.3s;
+    }
+    .faq-question:hover { background: rgba(255,255,255,0.1); }
+    .faq-answer {
+      max-height: 0;
+      opacity: 0;
+      padding: 0 15px;
+      transition: max-height 0.4s ease, opacity 0.3s ease-in-out, padding 0.3s;
+      overflow: hidden;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      opacity: 1;
+      padding: 15px;
+    }
+
+    /* Пример секции "Команда" */
+    .team-grid {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+    .team-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 5px;
+      text-align: center;
+      padding: 20px;
+      transition: transform 0.3s;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .team-card:hover { transform: scale(1.03); }
+    .team-card img {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      margin-bottom: 10px;
+    }
+    .team-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    .team-card p {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <!-- Верхнее меню -->
+  <header>
+    <div class="header-container">
+      <a href="#" class="logo">Такси Регион</a>
+      <div class="burger" id="burgerBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <nav>
+        <ul id="navMenu">
+          <li><a href="#">Кто мы</a></li>
+          <li>
+            <a href="#">Услуги</a>
+            <ul class="submenu">
+              <li><a href="#">Межгородские перевозки</a></li>
+              <li><a href="#">Технологии</a></li>
+              <li><a href="#">Примеры внедрения</a></li>
+            </ul>
+          </li>
+          <li><a href="#">Новости и события</a></li>
+          <li><a href="#">Вакансии</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Основной контент -->
+  <div class="main-content">
+    <h1>Изменение того, как движется мир</h1>
+    <p>
+      Добро пожаловать в «Такси Регион». Мы делаем междугородние перевозки
+      безопасными, надёжными и доступными. Наши решения — это результат
+      многолетних исследований и опыта в сфере транспортных технологий.
+    </p>
+    <a href="#" class="cta-btn">Оставить заявку</a>
+
+    <!-- Пример секции FAQ -->
+    <div class="faq-list" style="margin-top: 60px;">
+      <h2>Часто задаваемые вопросы</h2>
+      <div class="faq-item">
+        <div class="faq-question">1. Как заказать такси?</div>
+        <div class="faq-answer">
+          Оформите заказ через наше приложение или свяжитесь с оператором. Выберите пункт назначения и время — мы найдём подходящего водителя.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">2. Можно ли оформить посылку?</div>
+        <div class="faq-answer">
+          Да, мы предоставляем услугу «Посылка» — водитель доставит вашу корреспонденцию или груз в другой город.
+        </div>
+      </div>
+    </div>
+
+    <!-- Пример секции "Команда" -->
+    <section id="teamSection" style="margin-top: 60px;">
+      <h2 style="margin-bottom: 20px;">Наша команда</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <img src="https://via.placeholder.com/120" alt="Константин Ситиков">
+          <h3>Константин Ситиков</h3>
+          <p>Генеральный директор. Отвечает за стратегию и развитие компании.</p>
+        </div>
+        <div class="team-card">
+          <img src="https://via.placeholder.com/120" alt="Сосновских Андрей">
+          <h3>Сосновских Андрей</h3>
+          <p>Технический директор. Руководит разработкой и внедрением технологий.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Бургер-меню (мобильная версия)
+    const burgerBtn = document.getElementById('burgerBtn');
+    const navMenu   = document.getElementById('navMenu');
+
+    // Закрываем меню при клике вне
+    document.addEventListener('click', (e) => {
+      if (!navMenu.contains(e.target) && !burgerBtn.contains(e.target)) {
+        navMenu.style.display = 'none';
+        burgerBtn.classList.remove('open');
+      }
+    });
+
+    burgerBtn.addEventListener('click', () => {
+      burgerBtn.classList.toggle('open');
+      // Переключаем отображение меню при ширине до 600px
+      if (window.innerWidth <= 600) {
+        navMenu.style.display = (navMenu.style.display === 'flex') ? 'none' : 'flex';
+      }
+    });
+
+    // FAQ (аккордеон)
+    document.querySelectorAll('.faq-question').forEach(question => {
+      question.addEventListener('click', () => {
+        question.parentElement.classList.toggle('open');
+      });
+    });
+  </script>
+</body>
+</html>
