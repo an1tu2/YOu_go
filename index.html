@@ -6,7 +6,7 @@
   <title>Такси Регион — Брутальный стиль</title>
 
   <!-- Подключение Яндекс.Карт (2.1) с вашим API-ключом -->
-  <!-- Вставьте свой реальный ключ вместо YOUR_YANDEX_API_KEY -->
+  <!-- Замените YOUR_YANDEX_API_KEY на ваш реальный ключ -->
   <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_YANDEX_API_KEY&lang=ru_RU" type="text/javascript"></script>
 
   <style>
@@ -16,26 +16,47 @@
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: Arial, sans-serif;
       background-color: #000;
       color: #fff;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* ====== АНИМИРОВАННЫЙ ФОН ======
-       Вместо star-bg.gif используйте свой локальный GIF/видео,
-       чтобы избежать ошибок «This content is not available» */
+    /* ====== ДВИЖУЩИЙСЯ ФОН ======
+       Используется видеофон; замените "background.mp4" на свой файл */
     .animated-bg {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      object-fit: cover;
       z-index: -1;
-      background: url('star-bg.gif') center/cover no-repeat; /* Локальный GIF-файл */
-      opacity: 0.4; /* Прозрачность, чтобы контент оставался читабельным */
+      opacity: 0.4;
+    }
+
+    /* ====== Стили для подсказок (suggestions) ====== */
+    .suggestions-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      border: 1px solid #555;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      width: 100%;
+      z-index: 10;
+      display: none;
+    }
+    .suggestions-list li {
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+    .suggestions-list li:hover {
+      background-color: #333;
     }
 
     /* ====== HEADER ====== */
@@ -83,8 +104,6 @@
     main {
       margin-top: 70px; /* Отступ под шапку */
     }
-
-    /* Общие стили для "страниц" (секций) */
     .page {
       display: none; /* По умолчанию все скрыты */
       min-height: 80vh;
@@ -93,34 +112,20 @@
     .page.active {
       display: block;
     }
-
-    /* ====== Анимации перехода ====== */
+    /* Анимации перехода */
     .fade-in {
       animation: fadeIn 0.7s forwards ease-in-out;
     }
     .fade-out {
       animation: fadeOut 0.7s forwards ease-in-out;
     }
-
     @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.95);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
     }
     @keyframes fadeOut {
-      0% {
-        opacity: 1;
-        transform: scale(1);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(0.95);
-      }
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.95); }
     }
 
     /* ====== HOME SECTION ====== */
@@ -135,6 +140,7 @@
     .hero-left {
       flex: 1 1 400px;
       max-width: 600px;
+      position: relative;
     }
     .hero-left h1 {
       font-size: 2.5rem;
@@ -149,6 +155,7 @@
     }
     .form-group {
       margin-bottom: 15px;
+      position: relative;
     }
     label {
       display: block;
@@ -177,17 +184,41 @@
       border-radius: 4px;
       cursor: pointer;
       transition: opacity 0.2s, transform 0.2s;
+      margin-right: 10px;
     }
     .hero-left button:hover {
       opacity: 0.8;
       transform: scale(1.02);
+    }
+    /* Блок для вывода цены */
+    #priceResult {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      color: #ff9800;
+    }
+    /* ====== ФОРМА ОТПРАВКИ ПАСЫЛКИ ====== */
+    #parcelFormContainer {
+      display: none;
+      margin-top: 20px;
+      background-color: rgba(0,0,0,0.7);
+      border: 1px solid #ff9800;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    #parcelFormContainer h2 {
+      font-size: 1.8rem;
+      color: #ff9800;
+      margin-bottom: 15px;
+    }
+    #parcelFormContainer .form-group {
+      margin-bottom: 10px;
     }
 
     /* ====== ЯНДЕКС.КАРТА ====== */
     .map-container {
       flex: 1 1 300px;
       min-width: 300px;
-      height: 400px; /* фиксированная высота, чтобы карта была видна */
+      height: 400px; /* фиксированная высота */
       border: 2px solid #ff9800;
       border-radius: 8px;
       overflow: hidden;
@@ -215,7 +246,7 @@
       padding: 20px;
       text-align: center;
       transition: transform 0.2s, box-shadow 0.2s;
-      position: relative; /* Для скрытого блока */
+      position: relative;
     }
     .service-card:hover {
       transform: translateY(-5px);
@@ -246,7 +277,6 @@
       opacity: 0.8;
       transform: scale(1.02);
     }
-    /* Скрытый блок с дополнительной информацией */
     .service-info {
       display: none;
       background-color: rgba(0,0,0,0.7);
@@ -290,27 +320,20 @@
 
     /* ====== Адаптивность ====== */
     @media (max-width: 768px) {
-      header {
-        flex-wrap: wrap;
-      }
-      .hero-left h1 {
-        font-size: 2rem;
-      }
-      .hero-left {
-        max-width: 100%;
-      }
-      .map-container {
-        width: 100%;
-        height: 300px;
-        margin-top: 20px;
-      }
+      header { flex-wrap: wrap; }
+      .hero-left h1 { font-size: 2rem; }
+      .hero-left { max-width: 100%; }
+      .map-container { width: 100%; height: 300px; margin-top: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Анимированный фон -->
-  <div class="animated-bg"></div>
+  <!-- Движущийся фон через видео (файл background.mp4 должен быть доступен) -->
+  <video class="animated-bg" autoplay muted loop playsinline>
+    <source src="background.mp4" type="video/mp4">
+    Ваш браузер не поддерживает видеофон.
+  </video>
 
   <!-- Шапка -->
   <header>
@@ -326,26 +349,56 @@
 
   <!-- Основной контейнер -->
   <main>
-    <!-- Секция Home -->
+    <!-- Секция Home (Такси) -->
     <section class="page active" id="home">
       <div class="hero">
-        <!-- Левая часть: форма и текст -->
+        <!-- Левая часть: форма такси -->
         <div class="hero-left">
           <h1>Поездки с комфортом</h1>
           <p>Мгновенный заказ такси и безопасные маршруты. Доставим вас и ваш груз в любую точку, в любое время.</p>
 
           <div class="form-group">
             <label for="pickup">Откуда</label>
-            <input type="text" id="pickup" placeholder="Город, улица, дом..." />
+            <input type="text" id="pickup" placeholder="Город, улица, дом..." autocomplete="off" />
+            <ul id="pickup-suggestions" class="suggestions-list"></ul>
           </div>
           <div class="form-group">
             <label for="dropoff">Куда</label>
-            <input type="text" id="dropoff" placeholder="Пункт назначения" />
+            <input type="text" id="dropoff" placeholder="Пункт назначения" autocomplete="off" />
+            <ul id="dropoff-suggestions" class="suggestions-list"></ul>
           </div>
           <button id="showPricesBtn">Показать цены</button>
+          <button id="showParcelFormBtn">Оформить посылку</button>
+          <!-- Блок для вывода результата расчёта цены -->
+          <div id="priceResult"></div>
+
+          <!-- Форма для оформления посылки -->
+          <div id="parcelFormContainer">
+            <h2>Оформление посылки</h2>
+            <div class="form-group">
+              <label for="parcel-pickup">Откуда</label>
+              <input type="text" id="parcel-pickup" placeholder="Город, улица, дом..." autocomplete="off" />
+              <ul id="parcel-pickup-suggestions" class="suggestions-list"></ul>
+            </div>
+            <div class="form-group">
+              <label for="parcel-dropoff">Куда</label>
+              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" autocomplete="off" />
+              <ul id="parcel-dropoff-suggestions" class="suggestions-list"></ul>
+            </div>
+            <div class="form-group">
+              <label for="parcel-weight">Вес посылки (кг)</label>
+              <input type="number" id="parcel-weight" placeholder="Например, 2" />
+            </div>
+            <div class="form-group">
+              <label for="parcel-comment">Комментарий</label>
+              <input type="text" id="parcel-comment" placeholder="Особые пожелания" />
+            </div>
+            <button id="sendParcelBtn">Отправить посылку</button>
+            <button id="cancelParcelBtn">Вернуться к такси</button>
+          </div>
         </div>
 
-        <!-- Правая часть: темная карта Яндекс -->
+        <!-- Правая часть: темная Яндекс.Карта -->
         <div class="map-container" id="map"></div>
       </div>
     </section>
@@ -359,7 +412,7 @@
           <p>Срочные поездки по городу и области с фиксированными тарифами.</p>
           <button class="service-btn">Узнать подробнее</button>
           <div class="service-info">
-            <p>«Экспресс-такси» — это быстрое и удобное решение для поездок по городу и ближайшим районам. Машина приедет в течение 10 минут, а фиксированные тарифы позволяют заранее узнать стоимость.</p>
+            <p>«Экспресс-такси» — быстрое решение для поездок по городу и окрестностям. Машина подъедет в течение 10 минут, а фиксированные тарифы позволяют заранее узнать стоимость.</p>
           </div>
         </div>
         <div class="service-card">
@@ -407,11 +460,10 @@
     // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
     let currentSection = 'home';
     let myMap;                 // Экземпляр карты
-    let pickupPlacemark;       // Метка "Откуда"
-    let dropoffPlacemark;      // Метка "Куда"
+    let pickupPlacemark;       // Метка "Откуда" для такси
+    let dropoffPlacemark;      // Метка "Куда" для такси
 
-    // Координаты Екатеринбурга (по умолчанию) — Измените при необходимости
-    // Пример: [56.838011, 60.597465], Zoom = 10
+    // Координаты по умолчанию: Екатеринбург (измените при необходимости)
     const defaultCityCoords = [56.838011, 60.597465];
     const defaultZoom = 10;
 
@@ -425,25 +477,18 @@
         }
       });
     });
-
     function switchSection(targetId) {
       const oldSection = document.getElementById(currentSection);
       const newSection = document.getElementById(targetId);
-
-      // Сначала делаем fade-out на старой секции
       oldSection.classList.add('fade-out');
       oldSection.addEventListener('animationend', function handler() {
         oldSection.removeEventListener('animationend', handler);
-        // Скрываем старую секцию
         oldSection.classList.remove('active', 'fade-out');
-
-        // Показываем новую секцию с эффектом fade-in
         newSection.classList.add('active', 'fade-in');
         newSection.addEventListener('animationend', function handler2() {
           newSection.removeEventListener('animationend', handler2);
           newSection.classList.remove('fade-in');
         });
-
         currentSection = targetId;
       });
     }
@@ -451,66 +496,86 @@
     // ===== ИНИЦИАЛИЗАЦИЯ ЯНДЕКС.КАРТЫ =====
     ymaps.ready(initMap);
     function initMap() {
-      // Создаём карту внутри #map
       myMap = new ymaps.Map('map', {
         center: defaultCityCoords,
         zoom: defaultZoom,
         controls: []
       });
-      // Устанавливаем спутниковый тип для большей «тёмности»
       myMap.setType('yandex#satellite');
-
-      // Создаём 2 метки, но пока без координат
-      pickupPlacemark = new ymaps.Placemark(
-        defaultCityCoords,
-        { hintContent: 'Точка отправления' },
-        { preset: 'islands#yellowIcon' }
-      );
-      dropoffPlacemark = new ymaps.Placemark(
-        defaultCityCoords,
-        { hintContent: 'Точка назначения' },
-        { preset: 'islands#orangeIcon' }
-      );
-
-      // Добавляем их на карту
+      // Изначально устанавливаем метки на город по умолчанию
+      pickupPlacemark = new ymaps.Placemark(defaultCityCoords, { hintContent: 'Откуда' }, { preset: 'islands#yellowIcon' });
+      dropoffPlacemark = new ymaps.Placemark(defaultCityCoords, { hintContent: 'Куда' }, { preset: 'islands#orangeIcon' });
       myMap.geoObjects.add(pickupPlacemark);
       myMap.geoObjects.add(dropoffPlacemark);
     }
 
-    // ===== ГЕОКОДИРОВАНИЕ (ОПРЕДЕЛЕНИЕ КООРДИНАТ) И ОТОБРАЖЕНИЕ МАРШРУТА =====
+    // ===== САМОПОДСКАЗКИ ДЛЯ АДРЕСОВ =====
+    function setupSuggestions(inputId, listId) {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+      input.addEventListener('input', () => {
+        const query = input.value.trim();
+        if (query.length < 3) {
+          list.style.display = 'none';
+          list.innerHTML = '';
+          return;
+        }
+        ymaps.suggest(query).then(suggestions => {
+          list.innerHTML = '';
+          if (suggestions.length > 0) {
+            suggestions.forEach(item => {
+              const li = document.createElement('li');
+              li.textContent = item.value;
+              li.addEventListener('click', () => {
+                input.value = item.value;
+                list.style.display = 'none';
+              });
+              list.appendChild(li);
+            });
+            list.style.display = 'block';
+          } else {
+            list.style.display = 'none';
+          }
+        });
+      });
+      // Скрываем список при клике вне
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target)) {
+          list.style.display = 'none';
+        }
+      });
+    }
+    // Настройка для полей такси
+    setupSuggestions('pickup', 'pickup-suggestions');
+    setupSuggestions('dropoff', 'dropoff-suggestions');
+    // Настройка для полей посылки
+    setupSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
+    setupSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
+
+    // ===== ОБРАБОТКА КНОПКИ "ПОКАЗАТЬ ЦЕНЫ" =====
     document.getElementById('showPricesBtn').addEventListener('click', async () => {
       const pickup = document.getElementById('pickup').value.trim();
       const dropoff = document.getElementById('dropoff').value.trim();
-
       if (!pickup || !dropoff) {
-        alert('Пожалуйста, введите адрес «Откуда» и «Куда».');
+        alert('Пожалуйста, введите адреса "Откуда" и "Куда".');
         return;
       }
-
       try {
-        // Получаем координаты через геокодер Яндекса
         const pickupCoords = await geocodeAddress(pickup);
         const dropoffCoords = await geocodeAddress(dropoff);
-
         if (pickupCoords && dropoffCoords) {
-          // Обновляем метки на карте
           pickupPlacemark.geometry.setCoordinates(pickupCoords);
           dropoffPlacemark.geometry.setCoordinates(dropoffCoords);
-
-          // Масштабируем карту, чтобы обе точки были видны
           myMap.setBounds(myMap.geoObjects.getBounds(), { checkZoomRange: true });
-
-          // Пример: расчёт цены (фиктивный)
           const distanceKm = ymaps.coordSystem.geo.getDistance(pickupCoords, dropoffCoords) / 1000;
-          // Условная формула: 100 руб. за км
-          const price = Math.round(distanceKm * 100);
-          alert(`Примерная стоимость поездки: ~${price} руб.`);
+          const price = Math.round(distanceKm * 100); // Примерная цена: 100 руб./км
+          document.getElementById('priceResult').textContent = `Примерная стоимость поездки: ~${price} руб.`;
         } else {
           alert('Не удалось определить координаты одного из адресов.');
         }
       } catch (err) {
         console.error(err);
-        alert('Произошла ошибка при геокодировании.');
+        alert('Ошибка при геокодировании.');
       }
     });
 
@@ -522,16 +587,46 @@
       return null;
     }
 
-    // ===== ОЖИВЛЕНИЕ КНОПОК «Узнать подробнее» В УСЛУГАХ =====
-    document.addEventListener('DOMContentLoaded', () => {
-      const serviceBtns = document.querySelectorAll('.service-btn');
-      serviceBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          // Ищем соседний блок с классом .service-info
-          const infoBlock = btn.parentElement.querySelector('.service-info');
-          if (!infoBlock) return;
+    // ===== ОБРАБОТКА ФОРМЫ "ОФОРМИТЬ ПАСЫЛКУ" =====
+    const parcelFormContainer = document.getElementById('parcelFormContainer');
+    document.getElementById('showParcelFormBtn').addEventListener('click', () => {
+      // Скрываем форму такси и результаты цены
+      document.getElementById('priceResult').textContent = '';
+      // Показываем форму посылки
+      parcelFormContainer.style.display = 'block';
+    });
+    document.getElementById('cancelParcelBtn').addEventListener('click', () => {
+      parcelFormContainer.style.display = 'none';
+    });
+    document.getElementById('sendParcelBtn').addEventListener('click', async () => {
+      const pPickup = document.getElementById('parcel-pickup').value.trim();
+      const pDropoff = document.getElementById('parcel-dropoff').value.trim();
+      const pWeight = document.getElementById('parcel-weight').value.trim();
+      if (!pPickup || !pDropoff || !pWeight) {
+        alert('Пожалуйста, заполните все поля для отправки посылки.');
+        return;
+      }
+      try {
+        const pPickupCoords = await geocodeAddress(pPickup);
+        const pDropoffCoords = await geocodeAddress(pDropoff);
+        if (pPickupCoords && pDropoffCoords) {
+          // Здесь можно добавить логику расчёта стоимости и маршрута для посылки
+          alert('Посылка успешно оформлена!');
+          parcelFormContainer.style.display = 'none';
+        } else {
+          alert('Не удалось определить координаты для посылки.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка при оформлении посылки.');
+      }
+    });
 
-          // Переключаем отображение
+    // ===== ОЖИВЛЕНИЕ КНОПОК "УЗНАТЬ ПОДРОБНЕЕ" =====
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.service-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const infoBlock = btn.parentElement.querySelector('.service-info');
           if (infoBlock.style.display === 'block') {
             infoBlock.style.display = 'none';
           } else {
