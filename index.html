@@ -215,6 +215,7 @@
       padding: 20px;
       text-align: center;
       transition: transform 0.2s, box-shadow 0.2s;
+      position: relative; /* Для скрытого блока */
     }
     .service-card:hover {
       transform: translateY(-5px);
@@ -229,6 +230,34 @@
       color: #ccc;
       font-size: 0.95rem;
       line-height: 1.4;
+    }
+    .service-btn {
+      margin-top: 15px;
+      background-color: #ff9800;
+      color: #000;
+      padding: 8px 15px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .service-btn:hover {
+      opacity: 0.8;
+      transform: scale(1.02);
+    }
+    /* Скрытый блок с дополнительной информацией */
+    .service-info {
+      display: none;
+      background-color: rgba(0,0,0,0.7);
+      border: 1px solid #ff9800;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+      color: #eee;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      text-align: left;
     }
 
     /* ====== CONTACTS SECTION ====== */
@@ -288,9 +317,9 @@
     <div class="logo">Такси Регион</div>
     <nav>
       <ul>
-        <li><a href="#" class="nav-link" data-target="home">Home</a></li>
-        <li><a href="#" class="nav-link" data-target="services">Services</a></li>
-        <li><a href="#" class="nav-link" data-target="contacts">Contacts</a></li>
+        <li><a href="#" class="nav-link" data-target="home">Главная</a></li>
+        <li><a href="#" class="nav-link" data-target="services">Услуги</a></li>
+        <li><a href="#" class="nav-link" data-target="contacts">Контакты</a></li>
       </ul>
     </nav>
   </header>
@@ -313,7 +342,7 @@
             <label for="dropoff">Куда</label>
             <input type="text" id="dropoff" placeholder="Пункт назначения" />
           </div>
-          <button>Показать цены</button>
+          <button id="showPricesBtn">Показать цены</button>
         </div>
 
         <!-- Правая часть: темная карта Яндекс -->
@@ -323,23 +352,39 @@
 
     <!-- Секция Services -->
     <section class="page" id="services">
-      <h2>Наши услуги</h2>
+      <h2>Услуги</h2>
       <div class="services-grid">
         <div class="service-card">
           <h3>Экспресс-такси</h3>
           <p>Срочные поездки по городу и области с фиксированными тарифами.</p>
+          <button class="service-btn">Узнать подробнее</button>
+          <div class="service-info">
+            <p>«Экспресс-такси» — это быстрое и удобное решение для поездок по городу и ближайшим районам. Машина приедет в течение 10 минут, а фиксированные тарифы позволяют заранее узнать стоимость.</p>
+          </div>
         </div>
         <div class="service-card">
           <h3>Междугородние перевозки</h3>
           <p>Комфортабельные поездки в другие города с опытными водителями.</p>
+          <button class="service-btn">Узнать подробнее</button>
+          <div class="service-info">
+            <p>Путешествуйте между городами с максимальным комфортом. Мы гарантируем безопасность и оптимальные маршруты. Возможно групповое бронирование.</p>
+          </div>
         </div>
         <div class="service-card">
           <h3>Курьерская доставка</h3>
           <p>Надежная транспортировка документов и грузов до 100 кг.</p>
+          <button class="service-btn">Узнать подробнее</button>
+          <div class="service-info">
+            <p>Срочная и безопасная доставка посылок, документов и грузов по городу и области. Отслеживание статуса в реальном времени.</p>
+          </div>
         </div>
         <div class="service-card">
           <h3>Корпоративное обслуживание</h3>
           <p>Индивидуальные условия для бизнеса с ежемесячной отчетностью.</p>
+          <button class="service-btn">Узнать подробнее</button>
+          <div class="service-info">
+            <p>Заключите договор на корпоративное обслуживание и получайте подробную отчетность, приоритетную подачу авто и персональные тарифы для сотрудников.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -359,10 +404,18 @@
   </footer>
 
   <script>
-    // Текущая активная секция
+    // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
     let currentSection = 'home';
+    let myMap;                 // Экземпляр карты
+    let pickupPlacemark;       // Метка "Откуда"
+    let dropoffPlacemark;      // Метка "Куда"
 
-    // Плавные переходы между секциями
+    // Координаты Екатеринбурга (по умолчанию) — Измените при необходимости
+    // Пример: [56.838011, 60.597465], Zoom = 10
+    const defaultCityCoords = [56.838011, 60.597465];
+    const defaultZoom = 10;
+
+    // ===== ПЕРЕКЛЮЧЕНИЕ СЕКЦИЙ (ПЛАВНАЯ АНИМАЦИЯ) =====
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -395,29 +448,98 @@
       });
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ ТЁМНОЙ ЯНДЕКС.КАРТЫ =====
+    // ===== ИНИЦИАЛИЗАЦИЯ ЯНДЕКС.КАРТЫ =====
     ymaps.ready(initMap);
     function initMap() {
-      // Координаты (например, Москва)
-      const centerCoords = [55.7558, 37.6173];
-
       // Создаём карту внутри #map
-      const myMap = new ymaps.Map('map', {
-        center: centerCoords,
-        zoom: 10,
-        controls: []  // убираем стандартные кнопки
+      myMap = new ymaps.Map('map', {
+        center: defaultCityCoords,
+        zoom: defaultZoom,
+        controls: []
       });
-
-      // Устанавливаем «спутниковый» тип, он темнее, чем обычная схема
+      // Устанавливаем спутниковый тип для большей «тёмности»
       myMap.setType('yandex#satellite');
 
-      // Пример: добавим плейсмарк (метку)
-      const myPlacemark = new ymaps.Placemark(centerCoords, {
-        hintContent: 'Москва',
-        balloonContent: 'Столица России'
-      });
-      myMap.geoObjects.add(myPlacemark);
+      // Создаём 2 метки, но пока без координат
+      pickupPlacemark = new ymaps.Placemark(
+        defaultCityCoords,
+        { hintContent: 'Точка отправления' },
+        { preset: 'islands#yellowIcon' }
+      );
+      dropoffPlacemark = new ymaps.Placemark(
+        defaultCityCoords,
+        { hintContent: 'Точка назначения' },
+        { preset: 'islands#orangeIcon' }
+      );
+
+      // Добавляем их на карту
+      myMap.geoObjects.add(pickupPlacemark);
+      myMap.geoObjects.add(dropoffPlacemark);
     }
+
+    // ===== ГЕОКОДИРОВАНИЕ (ОПРЕДЕЛЕНИЕ КООРДИНАТ) И ОТОБРАЖЕНИЕ МАРШРУТА =====
+    document.getElementById('showPricesBtn').addEventListener('click', async () => {
+      const pickup = document.getElementById('pickup').value.trim();
+      const dropoff = document.getElementById('dropoff').value.trim();
+
+      if (!pickup || !dropoff) {
+        alert('Пожалуйста, введите адрес «Откуда» и «Куда».');
+        return;
+      }
+
+      try {
+        // Получаем координаты через геокодер Яндекса
+        const pickupCoords = await geocodeAddress(pickup);
+        const dropoffCoords = await geocodeAddress(dropoff);
+
+        if (pickupCoords && dropoffCoords) {
+          // Обновляем метки на карте
+          pickupPlacemark.geometry.setCoordinates(pickupCoords);
+          dropoffPlacemark.geometry.setCoordinates(dropoffCoords);
+
+          // Масштабируем карту, чтобы обе точки были видны
+          myMap.setBounds(myMap.geoObjects.getBounds(), { checkZoomRange: true });
+
+          // Пример: расчёт цены (фиктивный)
+          const distanceKm = ymaps.coordSystem.geo.getDistance(pickupCoords, dropoffCoords) / 1000;
+          // Условная формула: 100 руб. за км
+          const price = Math.round(distanceKm * 100);
+          alert(`Примерная стоимость поездки: ~${price} руб.`);
+        } else {
+          alert('Не удалось определить координаты одного из адресов.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Произошла ошибка при геокодировании.');
+      }
+    });
+
+    async function geocodeAddress(address) {
+      const result = await ymaps.geocode(address, { results: 1 });
+      if (result.geoObjects.getLength()) {
+        return result.geoObjects.get(0).geometry.getCoordinates();
+      }
+      return null;
+    }
+
+    // ===== ОЖИВЛЕНИЕ КНОПОК «Узнать подробнее» В УСЛУГАХ =====
+    document.addEventListener('DOMContentLoaded', () => {
+      const serviceBtns = document.querySelectorAll('.service-btn');
+      serviceBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Ищем соседний блок с классом .service-info
+          const infoBlock = btn.parentElement.querySelector('.service-info');
+          if (!infoBlock) return;
+
+          // Переключаем отображение
+          if (infoBlock.style.display === 'block') {
+            infoBlock.style.display = 'none';
+          } else {
+            infoBlock.style.display = 'block';
+          }
+        });
+      });
+    });
   </script>
 </body>
 </html>
