@@ -1,9 +1,19 @@
 (function() {
-  // Глобальные переменные (минимум)
   let currentSection = 'home';
   let myMap, pickupPlacemark, dropoffPlacemark;
   let selectedDate = null;
   let selectedTime = null;
+
+  // Адреса, для которых стоимость = 0
+  const freeAddresses = [
+    'Екатеринбург, Волгоградская 185',
+    'Екатеринбург, Волгоградская 187',
+    'Екатеринбург, Волгоградская 189'
+  ];
+
+  // Счётчик для "Далее (показать ещё)"
+  let tripsLoadCount = 0;
+  let maxTripsLoad = 2;
 
   document.addEventListener('DOMContentLoaded', () => {
     initBurger();
@@ -16,9 +26,9 @@
     initShowPrices();
     initSuggestions();
 
-    // Ограничение даты: нельзя выбрать прошедшую дату
-    const today = new Date().toISOString().split('T')[0];
+    // Нельзя выбрать прошедшую дату
     const dateInput = document.getElementById('dateInput');
+    const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
   });
 
@@ -32,7 +42,7 @@
     });
   }
 
-  // ====== Навигация между секциями ======
+  // ====== Навигация ======
   function initNavigation() {
     const links = document.querySelectorAll('.nav-link');
     links.forEach(link => {
@@ -82,7 +92,7 @@
     });
   }
 
-  // ====== Дата и время (модальные окна) ======
+  // ====== Модальные окна (Дата, Время) ======
   function initDateTimeOverlays() {
     const openDateBtn = document.getElementById('openDateBtn');
     const dateOverlay = document.getElementById('dateOverlay');
@@ -115,7 +125,7 @@
     });
   }
 
-  // ====== Окно со стоимостью ======
+  // ====== Всплывающее окно стоимости ======
   function initCostOverlay() {
     const costOverlay = document.getElementById('costOverlay');
     const closeCostBtn = document.getElementById('closeCostBtn');
@@ -130,7 +140,7 @@
     costOverlay.classList.add('active');
   }
 
-  // ====== Детали поездки ======
+  // ====== Детали поездки (и "Далее") ======
   function initTripDetails() {
     const trips = document.querySelectorAll('.trip-item');
     const tripDetailOverlay = document.getElementById('tripDetailOverlay');
@@ -144,29 +154,32 @@
         tripDetailOverlay.classList.add('active');
       });
     });
-
     closeTripDetailBtn.addEventListener('click', () => {
       tripDetailOverlay.classList.remove('active');
     });
 
-    // Кнопка "Далее (показать ещё)"
     const moreTripsBtn = document.getElementById('moreTripsBtn');
     moreTripsBtn.addEventListener('click', () => {
       loadMoreTrips();
     });
   }
 
-  // Пример функции, которая добавляет ещё поездки
   function loadMoreTrips() {
+    if (tripsLoadCount >= maxTripsLoad) {
+      alert('Больше поездок нет!');
+      return;
+    }
+    tripsLoadCount++;
+
     const tripsList = document.getElementById('tripsList');
     const newTrip = document.createElement('div');
     newTrip.classList.add('trip-item');
-    newTrip.dataset.detail = '№4 / 12.02.2025 / Пример Адреса → Пример Адреса';
+    newTrip.dataset.detail = `№4 / 12.02.2025 / Пример Адреса → Пример Адреса`;
     newTrip.innerHTML = `<strong>№4 — 12.02.2025</strong><br/>
                          Пример Адреса → Пример Адреса`;
     tripsList.insertBefore(newTrip, tripsList.lastElementChild);
 
-    // Навешиваем обработчик для вновь созданной поездки
+    // Навешиваем обработчик для новой поездки
     newTrip.addEventListener('click', () => {
       const detail = newTrip.dataset.detail;
       document.getElementById('tripDetailText').textContent = detail;
@@ -187,6 +200,7 @@
     cancelParcelBtn.addEventListener('click', () => {
       parcelFormContainer.style.display = 'none';
     });
+
     sendParcelBtn.addEventListener('click', async () => {
       const pPickup = document.getElementById('parcel-pickup').value.trim();
       const pDropoff = document.getElementById('parcel-dropoff').value.trim();
@@ -196,13 +210,18 @@
         alert('Заполните все поля для посылки.');
         return;
       }
-      // Геокодируем
+
       const fromCoords = await geocodeRealAddress(pPickup);
       const toCoords = await geocodeRealAddress(pDropoff);
       if (fromCoords && toCoords) {
-        const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
-        const cost = Math.round(distKm * 80 + parseFloat(pWeight) * 5);
-        showCostOverlay(`Стоимость посылки: ${cost} руб.`);
+        // Если один из адресов бесплатный => 0
+        if (isFreeAddress(pPickup) || isFreeAddress(pDropoff)) {
+          showCostOverlay(`Бесплатная доставка!`);
+        } else {
+          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
+          const cost = Math.round(distKm * 80 + parseFloat(pWeight) * 5);
+          showCostOverlay(`Стоимость посылки: ${cost} руб.`);
+        }
       }
     });
   }
@@ -217,58 +236,65 @@
         alert('Укажите адреса (Откуда / Куда).');
         return;
       }
-      // Геокодируем
       const fromCoords = await geocodeRealAddress(pickup);
       const toCoords = await geocodeRealAddress(dropoff);
       if (fromCoords && toCoords) {
         pickupPlacemark.geometry.setCoordinates(fromCoords);
         dropoffPlacemark.geometry.setCoordinates(toCoords);
         myMap.setBounds(myMap.geoObjects.getBounds(), { checkZoomRange: true });
-        const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
-        const price = Math.round(distKm * 100);
-        showCostOverlay(`Стоимость поездки: ${price} руб.`);
+
+        if (isFreeAddress(pickup) || isFreeAddress(dropoff)) {
+          showCostOverlay(`Поездка бесплатная!`);
+        } else {
+          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
+          const price = Math.round(distKm * 100);
+          showCostOverlay(`Стоимость поездки: ${price} руб.`);
+        }
       }
     });
   }
 
-  // ====== Подсказки (заглушка или реальный вызов ymaps.suggest) ======
+  // ====== Подсказки через ymaps.suggest ======
   function initSuggestions() {
-    // Пример: для pickup, dropoff, parcel-pickup, parcel-dropoff
-    setupFakeSuggestions('pickup', 'pickup-suggestions');
-    setupFakeSuggestions('dropoff', 'dropoff-suggestions');
-    setupFakeSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
-    setupFakeSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
+    setupYmapsSuggestions('pickup', 'pickup-suggestions');
+    setupYmapsSuggestions('dropoff', 'dropoff-suggestions');
+    setupYmapsSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
+    setupYmapsSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
   }
 
-  // Фейковые подсказки (заглушка). Замените на ymaps.suggest(...) при желании
-  function setupFakeSuggestions(inputId, listId) {
+  function setupYmapsSuggestions(inputId, listId) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);
 
-    input.addEventListener('input', debounce(() => {
+    input.addEventListener('input', debounce(async () => {
       const val = input.value.trim();
-      if (val.length < 2) {
+      if (val.length < 3) {
         list.style.display = 'none';
         list.innerHTML = '';
         return;
       }
-      // Подставим фейковые результаты
-      const fakeResults = fakeSuggestAddresses(val);
-      if (!fakeResults.length) {
-        list.style.display = 'none';
+      try {
+        const suggestions = await ymaps.suggest(val);
+        if (!suggestions || !suggestions.length) {
+          list.style.display = 'none';
+          list.innerHTML = '';
+          return;
+        }
         list.innerHTML = '';
-        return;
+        suggestions.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item.value;
+          li.addEventListener('click', () => {
+            input.value = item.value;
+            list.style.display = 'none';
+          });
+          list.appendChild(li);
+        });
+        list.style.display = 'block';
+      } catch (err) {
+        console.error('Ошибка при вызове ymaps.suggest:', err);
       }
-      list.innerHTML = fakeResults.map(item => `<li>${item}</li>`).join('');
-      list.style.display = 'block';
     }, 300));
-
-    list.addEventListener('click', (e) => {
-      if (e.target.tagName === 'LI') {
-        input.value = e.target.innerText;
-        list.style.display = 'none';
-      }
-    });
 
     document.addEventListener('click', (e) => {
       if (!input.contains(e.target) && !list.contains(e.target)) {
@@ -277,19 +303,36 @@
     });
   }
 
-  // Фейковая функция, возвращающая «подсказки»
-  function fakeSuggestAddresses(query) {
-    // В реальном проекте вызывайте ymaps.suggest(query)
-    // Здесь просто имитируем
-    const base = [
-      'Ирбит, ул. Ленина',
-      'Ирбит, ул. Лесная',
-      'Ирбит, ул. Левая',
-      'Екатеринбург, Волгоградская',
-      'Екатеринбург, Академика Бардина',
-      'Екатеринбург, Серафимы Дерябиной'
-    ];
-    return base.filter(item => item.toLowerCase().includes(query.toLowerCase()));
+  function debounce(fn, delay) {
+    let timer;
+    return function(...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  // ====== Геокодирование реального адреса ======
+  async function geocodeRealAddress(address) {
+    if (typeof ymaps === 'undefined') return null;
+    try {
+      const result = await ymaps.geocode(address, { results: 1 });
+      if (result.geoObjects.getLength()) {
+        return result.geoObjects.get(0).geometry.getCoordinates();
+      } else {
+        alert(`Адрес не найден: ${address}`);
+        return null;
+      }
+    } catch (err) {
+      console.error('Ошибка геокодирования:', err);
+      alert('Произошла ошибка при геокодировании.');
+      return null;
+    }
+  }
+
+  // ====== Проверка "бесплатных" адресов ======
+  function isFreeAddress(addr) {
+    // если addr содержит один из freeAddresses
+    return freeAddresses.some(freeAddr => addr.toLowerCase().includes(freeAddr.toLowerCase()));
   }
 
 })();
