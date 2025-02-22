@@ -1,3 +1,4 @@
+<!-- Начало HTML документа -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,8 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Такси Регион — Поездки и отзывы</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Подключаем Яндекс.Карты -->
-  <script src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU" defer></script>
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU" defer></script>
 </head>
 <body>
   <header>
@@ -26,40 +26,8 @@
     </button>
   </header>
 
-  <!-- Модальные окна -->
-  <div class="overlay" id="dateOverlay">
-    <div class="overlay-content">
-      <h2>Выберите дату</h2>
-      <input type="date" id="dateInput">
-      <button id="dateNextBtn">Далее</button>
-    </div>
-  </div>
-
-  <div class="overlay" id="timeOverlay">
-    <div class="overlay-content">
-      <h2>Выберите время</h2>
-      <input type="time" id="timeInput">
-      <button id="timeOkBtn">Ок</button>
-    </div>
-  </div>
-
-  <div class="cost-overlay" id="costOverlay">
-    <div class="cost-popup" id="costPopup">
-      <div id="costText"></div>
-      <button class="close-cost" id="closeCostBtn">OK</button>
-    </div>
-  </div>
-
-  <div class="trip-detail-overlay" id="tripDetailOverlay">
-    <div class="trip-detail-content" id="tripDetailContent">
-      <h3>Детали поездки</h3>
-      <p id="tripDetailText"></p>
-      <button id="closeTripDetailBtn">Закрыть</button>
-    </div>
-  </div>
-
+  <!-- Основное содержимое -->
   <main>
-    <!-- HOME -->
     <section class="page active" id="home">
       <div class="login-reminder">
         <p><strong>Войдите в свой аккаунт</strong> (через Telegram) — тогда мы покажем вашу недавнюю активность, чтобы вам было удобнее пользоваться сервисом.</p>
@@ -112,14 +80,9 @@
       </div>
     </section>
 
-    <!-- Поездки и отзывы -->
     <section class="page" id="trips-reviews">
       <h2>Мои поездки</h2>
       <div class="trips-list" id="tripsList">
-        <!-- Если поездок нет, можно показать креативное сообщение -->
-        <!-- <p style="text-align:center; color:var(--accent); font-size:1rem;">
-             Здесь будут показаны ваши незабываемые поездки – будьте готовы к новым приключениям!
-          </p> -->
         <div class="trip-item" data-id="1" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
           <strong>№1 — 02.02.2025</strong><br>
           Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185
@@ -137,10 +100,6 @@
 
       <h2>Отзывы</h2>
       <div class="reviews-list" id="reviewsList">
-        <!-- Если отзывов нет, можно показать креативное сообщение -->
-        <!-- <p style="text-align:center; color:var(--accent); font-size:1rem;">
-             Пока отзывы отсутствуют – ваш голос может стать первым!
-          </p> -->
         <div class="review-item">
           <p>“Спасибо за быструю подачу и аккуратную езду!”</p>
         </div>
@@ -150,7 +109,6 @@
       </div>
     </section>
 
-    <!-- Контакты -->
     <section class="page" id="contacts">
       <h2>Контакты</h2>
       <p>Мобильный: 8 902 262 9646</p>
