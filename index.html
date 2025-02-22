@@ -5,384 +5,11 @@
   <meta name="description" content="Такси Регион — комфортные и безопасные поездки" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Такси Регион — Поездки и отзывы</title>
-
-  <!-- Подключаем Яндекс.Карты (2.1) с вашим API-ключом -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Подключаем Яндекс.Карты -->
   <script src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU" defer></script>
-
-  <style>
-    /* =======================
-       Базовые стили и переменные
-       ======================= */
-    :root {
-      --accent: #ff9800;
-      --dark-bg: rgba(0, 0, 0, 0.8);
-      --text-color: #fff;
-      --subtext-color: #ccc;
-      --overlay-bg: rgba(0, 0, 0, 0.7);
-      --transition-fast: 0.2s;
-      --transition-slow: 0.7s;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #000;
-      font-family: Arial, sans-serif;
-      color: var(--text-color);
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* =======================
-       Шапка и навигация
-       ======================= */
-    header {
-      background: var(--dark-bg);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 30px;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      z-index: 1000;
-      border-bottom: 1px solid var(--accent);
-    }
-    .logo {
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-    nav { display: flex; align-items: center; }
-    nav ul {
-      display: flex;
-      gap: 20px;
-      list-style: none;
-    }
-    nav ul li a {
-      color: var(--text-color);
-      text-decoration: none;
-      font-size: 1rem;
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: 1px solid transparent;
-      transition: background var(--transition-fast);
-    }
-    nav ul li a:hover {
-      background: #222;
-      border-color: var(--accent);
-    }
-    .burger {
-      display: none;
-      flex-direction: column;
-      justify-content: space-around;
-      width: 30px;
-      height: 25px;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-    }
-    .burger span {
-      width: 100%;
-      height: 3px;
-      background: var(--accent);
-      transition: 0.3s;
-    }
-    .burger.active span:nth-child(1) {
-      transform: translateY(11px) rotate(45deg);
-    }
-    .burger.active span:nth-child(2) {
-      opacity: 0;
-    }
-    .burger.active span:nth-child(3) {
-      transform: translateY(-11px) rotate(-45deg);
-    }
-
-    /* =======================
-       Основной контент
-       ======================= */
-    main {
-      margin-top: 70px;
-      padding: 20px;
-      min-height: 80vh;
-    }
-    section.page { display: none; padding: 20px 0; }
-    section.page.active { display: block; }
-
-    /* Футер */
-    footer {
-      background: var(--dark-bg);
-      border-top: 1px solid var(--accent);
-      color: #aaa;
-      text-align: center;
-      padding: 15px;
-    }
-
-    /* =======================
-       Элементы главной страницы
-       ======================= */
-    .login-reminder {
-      background: rgba(255,255,255,0.05);
-      border-left: 4px solid var(--accent);
-      padding: 10px;
-      margin-bottom: 20px;
-      color: var(--subtext-color);
-      max-width: 600px;
-    }
-    .login-reminder strong { color: var(--accent); }
-    .hero {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .hero-left { flex: 1 1 350px; }
-    .hero-left h1 {
-      color: var(--accent);
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-    .form-group {
-      margin-bottom: 15px;
-      position: relative;
-    }
-    .form-group label {
-      color: var(--accent);
-      font-weight: bold;
-      margin-bottom: 5px;
-      display: block;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-bottom: 2px solid #555;
-      background: transparent;
-      color: var(--text-color);
-      transition: border-color 0.2s;
-      font-size: 1rem;
-    }
-    .form-group input::placeholder { color: #999; }
-    .form-group input:focus { border-color: var(--accent); }
-    .hero-left button {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 4px;
-      padding: 10px 15px;
-      margin: 5px 5px 5px 0;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .hero-left button:hover { opacity: 0.8; }
-
-    /* Карта */
-    .map-container {
-      flex: 1 1 450px;
-      height: 400px;
-      border: 2px solid var(--accent);
-      position: relative;
-      overflow: hidden;
-    }
-    #map { width: 100%; height: 100%; }
-
-    /* Подсказки */
-    .suggestions-list {
-      position: absolute;
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: none;
-      z-index: 1500;
-    }
-    .suggestions-list li {
-      padding: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .suggestions-list li:hover { background: #333; }
-
-    /* Форма посылки */
-    #parcelFormContainer {
-      display: none;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--accent);
-      border-radius: 6px;
-      padding: 10px;
-      margin-top: 15px;
-    }
-    #parcelFormContainer h2 {
-      font-size: 1.2rem;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    /* =======================
-       Модальные окна (Дата, время, стоимость, детали поездки)
-       ======================= */
-    .overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--overlay-bg);
-      z-index: 2000;
-      justify-content: center;
-      align-items: center;
-    }
-    .overlay.active { display: flex; }
-    .overlay-content {
-      background: #222;
-      border: 2px solid var(--accent);
-      border-radius: 8px;
-      padding: 20px;
-      max-width: 350px;
-      width: 90%;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      animation: fadeIn 0.5s ease forwards;
-    }
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .overlay-content h2 {
-      color: var(--accent);
-      margin-bottom: 10px;
-      font-size: 1.2rem;
-    }
-    .overlay-content input {
-      width: 80%;
-      margin-bottom: 10px;
-      font-size: 1rem;
-      text-align: center;
-      border: none;
-      border-bottom: 2px solid #555;
-      background: transparent;
-      color: var(--text-color);
-    }
-    .overlay-content input:focus {
-      border-color: var(--accent);
-      outline: none;
-    }
-    .overlay-content button {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
-      cursor: pointer;
-      margin-top: 5px;
-      font-size: 1rem;
-    }
-    .overlay-content button:hover { opacity: 0.8; }
-
-    /* Всплывающее окно для стоимости */
-    .cost-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--overlay-bg);
-      z-index: 3000;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .cost-overlay.active { display: flex; }
-    .cost-popup {
-      background: #111;
-      border: 2px solid var(--accent);
-      border-radius: 8px;
-      padding: 25px 40px;
-      color: var(--accent);
-      font-size: 1.2rem;
-      max-width: 400px;
-      width: 90%;
-      position: relative;
-      animation: fadeIn 0.5s ease forwards;
-    }
-    .cost-popup .close-cost {
-      display: block;
-      margin: 10px auto 0;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 4px;
-      padding: 8px 16px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    .cost-popup .close-cost:hover { opacity: 0.8; }
-
-    /* Секция "Поездки и отзывы" */
-    #trips-reviews h2 {
-      text-align: center;
-      color: var(--accent);
-      margin-bottom: 20px;
-    }
-    .trips-list, .reviews-list {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid #444;
-      border-radius: 6px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    .trip-item, .review-item {
-      background: #222;
-      border: 1px solid #333;
-      border-radius: 4px;
-      padding: 10px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-    .trip-item:hover, .review-item:hover { background: #333; }
-    .trip-detail-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--overlay-bg);
-      z-index: 4000;
-      justify-content: center;
-      align-items: center;
-    }
-    .trip-detail-overlay.active { display: flex; }
-    .trip-detail-content {
-      background: #222;
-      border: 2px solid var(--accent);
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 400px;
-      width: 90%;
-      text-align: left;
-      animation: fadeIn 0.5s ease forwards;
-    }
-    .trip-detail-content h3 {
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-
-    /* Мобильные стили */
-    @media (max-width: 768px) {
-      .burger { display: flex; }
-      nav ul {
-        display: none;
-        flex-direction: column;
-        gap: 10px;
-      }
-      nav.active ul { display: flex; }
-      .hero { flex-direction: column; }
-      .map-container { height: 300px; }
-    }
-  </style>
 </head>
 <body>
-
-  <!-- HEADER -->
   <header>
     <div class="logo">Такси Регион</div>
     <nav id="nav">
@@ -399,11 +26,11 @@
     </button>
   </header>
 
-  <!-- OVERLAYS: Дата, Время, Стоимость, Детали поездки -->
+  <!-- Модальные окна -->
   <div class="overlay" id="dateOverlay">
     <div class="overlay-content">
       <h2>Выберите дату</h2>
-      <input type="date" id="dateInput" />
+      <input type="date" id="dateInput">
       <button id="dateNextBtn">Далее</button>
     </div>
   </div>
@@ -411,14 +38,14 @@
   <div class="overlay" id="timeOverlay">
     <div class="overlay-content">
       <h2>Выберите время</h2>
-      <input type="time" id="timeInput" />
+      <input type="time" id="timeInput">
       <button id="timeOkBtn">Ок</button>
     </div>
   </div>
 
   <div class="cost-overlay" id="costOverlay">
     <div class="cost-popup" id="costPopup">
-      <div id="costText" style="margin-bottom:10px;"></div>
+      <div id="costText"></div>
       <button class="close-cost" id="closeCostBtn">OK</button>
     </div>
   </div>
@@ -427,11 +54,10 @@
     <div class="trip-detail-content" id="tripDetailContent">
       <h3>Детали поездки</h3>
       <p id="tripDetailText"></p>
-      <button id="closeTripDetailBtn" style="margin-top:10px; background:var(--accent); color:#000; border:none; padding:5px 10px; border-radius:4px;">Закрыть</button>
+      <button id="closeTripDetailBtn">Закрыть</button>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
   <main>
     <!-- HOME -->
     <section class="page active" id="home">
@@ -439,93 +65,82 @@
         <p><strong>Войдите в свой аккаунт</strong> (через Telegram) — тогда мы покажем вашу недавнюю активность, чтобы вам было удобнее пользоваться сервисом.</p>
       </div>
       <div class="hero">
-        <!-- Левая часть (форма заказа) -->
         <div class="hero-left">
           <h1>Осуществляем комфортные и безопасные поездки</h1>
           <p>Выберите направление и узнайте стоимость прямо сейчас</p>
-
           <div class="form-group">
             <label for="pickup">Откуда (адрес)</label>
-            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19" />
+            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19">
             <ul id="pickup-suggestions" class="suggestions-list"></ul>
           </div>
           <div class="form-group">
             <label for="dropoff">Куда (адрес)</label>
-            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185" />
+            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185">
             <ul id="dropoff-suggestions" class="suggestions-list"></ul>
           </div>
-
-          <!-- Кнопки выбора даты/времени и расчета стоимости -->
           <button id="openDateBtn">Выбрать дату/время</button>
           <button id="showPricesBtn">Показать цены</button>
           <button id="showParcelBtn">Оформить посылку</button>
 
-          <!-- Форма оформления посылки -->
           <div id="parcelFormContainer">
             <h2>Оформление посылки</h2>
             <div class="form-group">
               <label for="parcel-pickup">Откуда</label>
-              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." />
+              <input type="text" id="parcel-pickup" placeholder="Улица, дом...">
               <ul id="parcel-pickup-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-dropoff">Куда</label>
-              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" />
+              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения">
               <ul id="parcel-dropoff-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-weight">Вес (кг)</label>
-              <input type="number" id="parcel-weight" placeholder="2" />
+              <input type="number" id="parcel-weight" placeholder="2">
             </div>
             <div class="form-group">
               <label for="parcel-comment">Комментарий</label>
-              <input type="text" id="parcel-comment" placeholder="Особые пожелания" />
+              <input type="text" id="parcel-comment" placeholder="Особые пожелания">
             </div>
             <button id="sendParcelBtn">Отправить посылку</button>
             <button id="cancelParcelBtn">Вернуться к такси</button>
           </div>
         </div>
-        <!-- Правая часть: Карта -->
         <div class="map-container">
           <div id="map"></div>
         </div>
       </div>
     </section>
 
-    <!-- Секция "Поездки и отзывы" -->
+    <!-- Поездки и отзывы -->
     <section class="page" id="trips-reviews">
       <h2>Мои поездки</h2>
       <div class="trips-list" id="tripsList">
-        <!-- Если поездок нет, можно вывести креативное сообщение:
-             <p style="text-align:center; color:var(--accent); font-size:1rem;">
-               Здесь будут показаны ваши незабываемые поездки – будьте готовы к новым приключениям!
-             </p>
-        -->
-        <!-- Пример 3 поездок -->
+        <!-- Если поездок нет, можно показать креативное сообщение -->
+        <!-- <p style="text-align:center; color:var(--accent); font-size:1rem;">
+             Здесь будут показаны ваши незабываемые поездки – будьте готовы к новым приключениям!
+          </p> -->
         <div class="trip-item" data-id="1" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
-          <strong>№1 — 02.02.2025</strong><br/>
+          <strong>№1 — 02.02.2025</strong><br>
           Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185
         </div>
         <div class="trip-item" data-id="2" data-detail="№2 / 05.02.2025 / Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
-          <strong>№2 — 05.02.2025</strong><br/>
+          <strong>№2 — 05.02.2025</strong><br>
           Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45
         </div>
         <div class="trip-item" data-id="3" data-detail="№3 / 08.02.2025 / Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
-          <strong>№3 — 08.02.2025</strong><br/>
+          <strong>№3 — 08.02.2025</strong><br>
           Ирбит, Советская 45 → Екатеринбург, Декабристов 18
         </div>
-        <button id="moreTripsBtn" style="background:var(--accent); color:#000; border:none; padding:8px 16px; border-radius:4px; margin-top:10px; cursor:pointer;">
-          Далее (показать ещё)
-        </button>
+        <button id="moreTripsBtn">Далее (показать ещё)</button>
       </div>
 
       <h2>Отзывы</h2>
       <div class="reviews-list" id="reviewsList">
-        <!-- Если отзывов нет, можно вывести креативное сообщение:
-             <p style="text-align:center; color:var(--accent); font-size:1rem;">
-               Пока отзывы отсутствуют – ваш голос может стать первым!
-             </p>
-        -->
+        <!-- Если отзывов нет, можно показать креативное сообщение -->
+        <!-- <p style="text-align:center; color:var(--accent); font-size:1rem;">
+             Пока отзывы отсутствуют – ваш голос может стать первым!
+          </p> -->
         <div class="review-item">
           <p>“Спасибо за быструю подачу и аккуратную езду!”</p>
         </div>
@@ -535,7 +150,7 @@
       </div>
     </section>
 
-    <!-- Секция "Контакты" -->
+    <!-- Контакты -->
     <section class="page" id="contacts">
       <h2>Контакты</h2>
       <p>Мобильный: 8 902 262 9646</p>
@@ -556,81 +171,6 @@
     <p>© 2025 Такси Регион. Все права защищены.</p>
   </footer>
 
-  <!-- =======================
-       JavaScript: Инициализация карты, обработка форм, оверлеи, подсказки
-       ======================= -->
-  <script>
-    let currentSection = 'home';
-    let myMap, pickupPlacemark, dropoffPlacemark;
-    let selectedDate = null;
-    let selectedTime = null;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      // Бургер-меню
-      const burgerBtn = document.getElementById('burgerBtn');
-      const nav = document.getElementById('nav');
-      burgerBtn.addEventListener('click', () => {
-        burgerBtn.classList.toggle('active');
-        nav.classList.toggle('active');
-      });
-      document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const targetId = link.getAttribute('data-target');
-          switchSection(targetId);
-          burgerBtn.classList.remove('active');
-          nav.classList.remove('active');
-        });
-      });
-
-      // Инициализация карты
-      if (typeof ymaps !== 'undefined') {
-        ymaps.ready(initMap);
-      } else {
-        console.error('Яндекс.Карты не загрузились.');
-      }
-
-      // Настройка подсказок для полей
-      setupSuggestions('pickup', 'pickup-suggestions');
-      setupSuggestions('dropoff', 'dropoff-suggestions');
-      setupSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
-      setupSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
-
-      // Обработчики формы посылки
-      const showParcelBtn = document.getElementById('showParcelBtn');
-      const parcelForm = document.getElementById('parcelFormContainer');
-      const cancelParcelBtn = document.getElementById('cancelParcelBtn');
-      const sendParcelBtn = document.getElementById('sendParcelBtn');
-      showParcelBtn.addEventListener('click', () => { parcelForm.style.display = 'block'; });
-      cancelParcelBtn.addEventListener('click', () => { parcelForm.style.display = 'none'; });
-      sendParcelBtn.addEventListener('click', async () => {
-        const fromAddr = document.getElementById('parcel-pickup').value.trim();
-        const toAddr = document.getElementById('parcel-dropoff').value.trim();
-        const weight = parseFloat(document.getElementById('parcel-weight').value.trim() || '0');
-        if (!fromAddr || !toAddr || !weight) {
-          alert('Заполните все поля!');
-          return;
-        }
-        const fromCoords = await geocodeRealAddress(fromAddr);
-        const toCoords = await geocodeRealAddress(toAddr);
-        if (fromCoords && toCoords) {
-          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
-          const cost = Math.round(distKm * 80 + weight * 5);
-          showCostOverlay(`Стоимость посылки: ${cost} руб.`);
-        }
-      });
-
-      // Обработчик "Показать цены" для такси
-      const showPricesBtn = document.getElementById('showPricesBtn');
-      showPricesBtn.addEventListener('click', async () => {
-        const from = document.getElementById('pickup').value.trim();
-        const to = document.getElementById('dropoff').value.trim();
-        if (!from || !to) {
-          alert('Укажите адреса (Откуда / Куда)!');
-          return;
-        }
-        const c1 = await geocodeRealAddress(from);
-        const c2 = await geocodeRealAddress(to);
-        if (c1 && c2) {
-          pickupPlacemark.geometry.setCoordinates(c1);
-          dropoffPlacemark.geometry.setCoordinates(
+  <script src="script.js"></script>
+</body>
+</html>
