@@ -9,9 +9,11 @@
   <!-- Подключаем стили -->
   <link rel="stylesheet" href="style.css" />
 
-  <!-- Подключаем Яндекс.Карты (2.1) -->
-  <!-- Замените YOUR_API_KEY на реальный ключ -->
-  <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU" defer></script>
+  <!-- Подключаем Яндекс.Карты (2.1) с вашим реальным API-ключом -->
+  <script 
+    src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU"
+    defer
+  ></script>
 </head>
 <body>
   <header>
@@ -34,6 +36,7 @@
   <div class="overlay" id="dateOverlay">
     <div class="overlay-content">
       <h2>Выберите дату</h2>
+      <!-- Нельзя выбрать прошедшую дату (min=текущая) -->
       <input type="date" id="dateInput" />
       <button id="dateNextBtn">Далее</button>
     </div>
@@ -142,38 +145,4 @@
       </div>
 
       <h2>Отзывы</h2>
-      <div class="reviews-list" id="reviewsList">
-        <div class="review-item">
-          <p>“Спасибо за быструю подачу и аккуратную езду!”</p>
-        </div>
-        <div class="review-item">
-          <p>“Заказал посылку, всё дошло вовремя – отличный сервис!”</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Контакты -->
-    <section class="page" id="contacts">
-      <h2>Контакты</h2>
-      <p>Мобильный: 8 902 262 9646</p>
-      <p>Доп. телефон: 8 (34355) 4-54-54</p>
-      <p>Бесплатные адреса в Екатеринбурге:</p>
-      <ul>
-        <li>Волгоградская 185, 187, 189</li>
-        <li>Академика Бардина 4 "А"</li>
-        <li>Серафимы Дерябиной 32</li>
-        <li>Улица Декабристов, 18</li>
-      </ul>
-      <p>Открыто круглосуточно</p>
-      <p>Диспетчерская служба "Регион 96" +7 (34355) 4-54-54</p>
-    </section>
-  </main>
-
-  <footer>
-    <p>© 2025 Такси Регион. Все права защищены.</p>
-  </footer>
-
-  <!-- Подключаем основной скрипт -->
-  <script src="script.js"></script>
-</body>
-</html>
+      <
