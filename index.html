@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Такси Регион — Брутальный стиль</title>
 
-  <!-- Подключение Google Maps с указанием коллбэка initMap -->
-  <!-- Замените "YOUR_API_KEY" на ваш реальный ключ Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+  <!-- Подключение Яндекс.Карт (2.1) с вашим API-ключом -->
+  <!-- Вставьте свой реальный ключ вместо YOUR_YANDEX_API_KEY -->
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_YANDEX_API_KEY&lang=ru_RU" type="text/javascript"></script>
 
   <style>
     /* Сброс базовых отступов и боксов */
@@ -26,7 +26,7 @@
 
     /* ====== АНИМИРОВАННЫЙ ФОН ======
        Вместо star-bg.gif используйте свой локальный GIF/видео,
-       чтобы избежать ошибок «This content is not available». */
+       чтобы избежать ошибок «This content is not available» */
     .animated-bg {
       position: fixed;
       top: 0;
@@ -34,7 +34,7 @@
       width: 100%;
       height: 100%;
       z-index: -1;
-      background: url('star-bg.gif') center/cover no-repeat; /* Локальный файл */
+      background: url('star-bg.gif') center/cover no-repeat; /* Локальный GIF-файл */
       opacity: 0.4; /* Прозрачность, чтобы контент оставался читабельным */
     }
 
@@ -112,7 +112,6 @@
         transform: scale(1);
       }
     }
-
     @keyframes fadeOut {
       0% {
         opacity: 1;
@@ -184,8 +183,7 @@
       transform: scale(1.02);
     }
 
-    /* ====== КАРТА (Google Maps) ====== */
-    /* Блок для карты */
+    /* ====== ЯНДЕКС.КАРТА ====== */
     .map-container {
       flex: 1 1 300px;
       min-width: 300px;
@@ -194,7 +192,6 @@
       border-radius: 8px;
       overflow: hidden;
     }
-    /* Чтобы карта была в «тёмном» стиле — подключаем custom Styles при инициализации (см. JS). */
 
     /* ====== SERVICES SECTION ====== */
     #services h2 {
@@ -283,7 +280,7 @@
 </head>
 <body>
 
-  <!-- Фоновая анимация -->
+  <!-- Анимированный фон -->
   <div class="animated-bg"></div>
 
   <!-- Шапка -->
@@ -319,7 +316,7 @@
           <button>Показать цены</button>
         </div>
 
-        <!-- Правая часть: темная карта Google Maps -->
+        <!-- Правая часть: темная карта Яндекс -->
         <div class="map-container" id="map"></div>
       </div>
     </section>
@@ -365,7 +362,7 @@
     // Текущая активная секция
     let currentSection = 'home';
 
-    // Ссылки меню
+    // Плавные переходы между секциями
     document.querySelectorAll('.nav-link').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -398,129 +395,28 @@
       });
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ ТЁМНОЙ ТЕМЫ GOOGLE MAPS =====
+    // ===== ИНИЦИАЛИЗАЦИЯ ТЁМНОЙ ЯНДЕКС.КАРТЫ =====
+    ymaps.ready(initMap);
     function initMap() {
       // Координаты (например, Москва)
-      const moscow = { lat: 55.7558, lng: 37.6173 };
+      const centerCoords = [55.7558, 37.6173];
 
-      // JSON-стиль «Night Mode» (пример с SnazzyMaps)
-      const darkStyle = [
-        {
-          "elementType": "geometry",
-          "stylers": [{ "color": "#212121" }]
-        },
-        {
-          "elementType": "labels.icon",
-          "stylers": [{ "visibility": "off" }]
-        },
-        {
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#757575" }]
-        },
-        {
-          "elementType": "labels.text.stroke",
-          "stylers": [{ "color": "#212121" }]
-        },
-        {
-          "featureType": "administrative",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#757575" }]
-        },
-        {
-          "featureType": "administrative.country",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#9e9e9e" }]
-        },
-        {
-          "featureType": "administrative.land_parcel",
-          "stylers": [{ "visibility": "off" }]
-        },
-        {
-          "featureType": "administrative.locality",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#bdbdbd" }]
-        },
-        {
-          "featureType": "poi",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#757575" }]
-        },
-        {
-          "featureType": "poi.park",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#181818" }]
-        },
-        {
-          "featureType": "poi.park",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#616161" }]
-        },
-        {
-          "featureType": "poi.park",
-          "elementType": "labels.text.stroke",
-          "stylers": [{ "color": "#1b1b1b" }]
-        },
-        {
-          "featureType": "road",
-          "elementType": "geometry.fill",
-          "stylers": [{ "color": "#2c2c2c" }]
-        },
-        {
-          "featureType": "road",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#8a8a8a" }]
-        },
-        {
-          "featureType": "road.arterial",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#373737" }]
-        },
-        {
-          "featureType": "road.highway",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#3c3c3c" }]
-        },
-        {
-          "featureType": "road.highway.controlled_access",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#4e4e4e" }]
-        },
-        {
-          "featureType": "road.local",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#616161" }]
-        },
-        {
-          "featureType": "transit",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#757575" }]
-        },
-        {
-          "featureType": "water",
-          "elementType": "geometry",
-          "stylers": [{ "color": "#000000" }]
-        },
-        {
-          "featureType": "water",
-          "elementType": "labels.text.fill",
-          "stylers": [{ "color": "#3d3d3d" }]
-        }
-      ];
-
-      // Создаём карту внутри блока #map
-      const map = new google.maps.Map(document.getElementById("map"), {
-        center: moscow,
+      // Создаём карту внутри #map
+      const myMap = new ymaps.Map('map', {
+        center: centerCoords,
         zoom: 10,
-        styles: darkStyle,
-        disableDefaultUI: true // убираем лишние кнопки
+        controls: []  // убираем стандартные кнопки
       });
 
-      // Пример: добавим маркер
-      new google.maps.Marker({
-        position: moscow,
-        map: map,
-        title: "Москва"
+      // Устанавливаем «спутниковый» тип, он темнее, чем обычная схема
+      myMap.setType('yandex#satellite');
+
+      // Пример: добавим плейсмарк (метку)
+      const myPlacemark = new ymaps.Placemark(centerCoords, {
+        hintContent: 'Москва',
+        balloonContent: 'Столица России'
       });
+      myMap.geoObjects.add(myPlacemark);
     }
   </script>
 </body>
