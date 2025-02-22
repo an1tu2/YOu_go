@@ -191,4 +191,226 @@ footer {
 }
 /* Подсказки */
 .suggestions-list {
-  position
+  position: absolute;
+  background: #222;
+  border: 1px solid #444;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: none;
+  z-index: 1500;
+}
+.suggestions-list li {
+  padding: 8px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.suggestions-list li:hover {
+  background: #333;
+}
+/* Форма посылки */
+#parcelFormContainer {
+  display: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 15px;
+}
+#parcelFormContainer h2 {
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+/* Модальные окна */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+.overlay.active {
+  display: flex;
+}
+.overlay-content {
+  background: #222;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 350px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  animation: fadeIn 0.5s ease forwards;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.overlay-content h2 {
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+.overlay-content input {
+  width: 80%;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  text-align: center;
+  border: none;
+  border-bottom: 2px solid #555;
+  background: transparent;
+  color: var(--text-color);
+}
+.overlay-content input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.overlay-content button {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-top: 5px;
+  font-size: 1rem;
+}
+.overlay-content button:hover {
+  opacity: 0.8;
+}
+/* Окно стоимости */
+.cost-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  z-index: 3000;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.cost-overlay.active {
+  display: flex;
+}
+.cost-popup {
+  background: #111;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 25px 40px;
+  color: var(--accent);
+  font-size: 1.2rem;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  animation: fadeIn 0.5s ease forwards;
+}
+.cost-popup .close-cost {
+  display: block;
+  margin: 10px auto 0;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.cost-popup .close-cost:hover {
+  opacity: 0.8;
+}
+
+/* Секция "Поездки и отзывы" */
+#trips-reviews h2 {
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.trips-list, .reviews-list {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+.trip-item, .review-item {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.trip-item:hover, .review-item:hover {
+  background: #333;
+}
+.trip-detail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--overlay-bg);
+  z-index: 4000;
+  justify-content: center;
+  align-items: center;
+}
+.trip-detail-overlay.active {
+  display: flex;
+}
+.trip-detail-content {
+  background: #222;
+  border: 2px solid var(--accent);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  text-align: left;
+  animation: fadeIn 0.5s ease forwards;
+}
+.trip-detail-content h3 {
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+/* Адаптация под мобильные */
+@media (max-width: 768px) {
+  .burger {
+    display: flex;
+  }
+  nav ul {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--dark-bg);
+    border-top: 1px solid var(--accent);
+    padding: 10px;
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 200px;
+  }
+  nav.active ul {
+    display: flex;
+  }
+  .hero {
+    flex-direction: column;
+  }
+  .map-container {
+    width: 100%;
+    height: 300px;
+  }
+}
