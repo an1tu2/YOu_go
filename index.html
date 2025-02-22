@@ -1,4 +1,3 @@
-<!-- Начало HTML документа -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,7 +5,12 @@
   <meta name="description" content="Такси Регион — комфортные и безопасные поездки" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Такси Регион — Поездки и отзывы</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Подключаем стили -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Подключаем Яндекс.Карты (2.1) -->
+  <!-- Замените YOUR_API_KEY на реальный ключ -->
   <script src="https://api-maps.yandex.ru/2.1/?apikey=YOUR_API_KEY&lang=ru_RU" defer></script>
 </head>
 <body>
@@ -26,73 +30,112 @@
     </button>
   </header>
 
-  <!-- Основное содержимое -->
+  <!-- Модальные окна (дата, время, стоимость, детали поездки) -->
+  <div class="overlay" id="dateOverlay">
+    <div class="overlay-content">
+      <h2>Выберите дату</h2>
+      <input type="date" id="dateInput" />
+      <button id="dateNextBtn">Далее</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="timeOverlay">
+    <div class="overlay-content">
+      <h2>Выберите время</h2>
+      <input type="time" id="timeInput" />
+      <button id="timeOkBtn">Ок</button>
+    </div>
+  </div>
+
+  <div class="cost-overlay" id="costOverlay">
+    <div class="cost-popup">
+      <div id="costText" style="margin-bottom: 10px;"></div>
+      <button class="close-cost" id="closeCostBtn">OK</button>
+    </div>
+  </div>
+
+  <div class="trip-detail-overlay" id="tripDetailOverlay">
+    <div class="trip-detail-content">
+      <h3>Детали поездки</h3>
+      <p id="tripDetailText"></p>
+      <button id="closeTripDetailBtn" style="margin-top:10px;">Закрыть</button>
+    </div>
+  </div>
+
   <main>
+    <!-- Главная -->
     <section class="page active" id="home">
       <div class="login-reminder">
         <p><strong>Войдите в свой аккаунт</strong> (через Telegram) — тогда мы покажем вашу недавнюю активность, чтобы вам было удобнее пользоваться сервисом.</p>
       </div>
       <div class="hero">
+        <!-- Левая часть -->
         <div class="hero-left">
           <h1>Осуществляем комфортные и безопасные поездки</h1>
           <p>Выберите направление и узнайте стоимость прямо сейчас</p>
+
           <div class="form-group">
             <label for="pickup">Откуда (адрес)</label>
-            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19">
+            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19" />
             <ul id="pickup-suggestions" class="suggestions-list"></ul>
           </div>
           <div class="form-group">
             <label for="dropoff">Куда (адрес)</label>
-            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185">
+            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185" />
             <ul id="dropoff-suggestions" class="suggestions-list"></ul>
           </div>
+
           <button id="openDateBtn">Выбрать дату/время</button>
           <button id="showPricesBtn">Показать цены</button>
           <button id="showParcelBtn">Оформить посылку</button>
 
+          <!-- Форма посылки -->
           <div id="parcelFormContainer">
             <h2>Оформление посылки</h2>
             <div class="form-group">
               <label for="parcel-pickup">Откуда</label>
-              <input type="text" id="parcel-pickup" placeholder="Улица, дом...">
+              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." />
               <ul id="parcel-pickup-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-dropoff">Куда</label>
-              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения">
+              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" />
               <ul id="parcel-dropoff-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-weight">Вес (кг)</label>
-              <input type="number" id="parcel-weight" placeholder="2">
+              <input type="number" id="parcel-weight" placeholder="2" />
             </div>
             <div class="form-group">
               <label for="parcel-comment">Комментарий</label>
-              <input type="text" id="parcel-comment" placeholder="Особые пожелания">
+              <input type="text" id="parcel-comment" placeholder="Особые пожелания" />
             </div>
             <button id="sendParcelBtn">Отправить посылку</button>
             <button id="cancelParcelBtn">Вернуться к такси</button>
           </div>
         </div>
+        <!-- Правая часть (карта) -->
         <div class="map-container">
           <div id="map"></div>
         </div>
       </div>
     </section>
 
+    <!-- Поездки и отзывы -->
     <section class="page" id="trips-reviews">
       <h2>Мои поездки</h2>
       <div class="trips-list" id="tripsList">
-        <div class="trip-item" data-id="1" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
-          <strong>№1 — 02.02.2025</strong><br>
+        <!-- Пример 3 поездок -->
+        <div class="trip-item" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
+          <strong>№1 — 02.02.2025</strong><br/>
           Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185
         </div>
-        <div class="trip-item" data-id="2" data-detail="№2 / 05.02.2025 / Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
-          <strong>№2 — 05.02.2025</strong><br>
+        <div class="trip-item" data-detail="№2 / 05.02.2025 / Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
+          <strong>№2 — 05.02.2025</strong><br/>
           Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45
         </div>
-        <div class="trip-item" data-id="3" data-detail="№3 / 08.02.2025 / Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
-          <strong>№3 — 08.02.2025</strong><br>
+        <div class="trip-item" data-detail="№3 / 08.02.2025 / Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
+          <strong>№3 — 08.02.2025</strong><br/>
           Ирбит, Советская 45 → Екатеринбург, Декабристов 18
         </div>
         <button id="moreTripsBtn">Далее (показать ещё)</button>
@@ -109,6 +152,7 @@
       </div>
     </section>
 
+    <!-- Контакты -->
     <section class="page" id="contacts">
       <h2>Контакты</h2>
       <p>Мобильный: 8 902 262 9646</p>
@@ -129,6 +173,7 @@
     <p>© 2025 Такси Регион. Все права защищены.</p>
   </footer>
 
+  <!-- Подключаем основной скрипт -->
   <script src="script.js"></script>
 </body>
 </html>
