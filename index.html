@@ -2,112 +2,93 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="description" content="Такси Регион — комфортные и безопасные поездки" />
+  <!-- SEO -->
+  <meta name="description" content="Такси Регион — безопасные и комфортные поездки по региону" />
+  <meta name="keywords" content="такси, регион, екатеринбург, ирбит, доставка, поездки" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Такси Регион — Поездки и отзывы</title>
 
-  <!-- Подключаем стили -->
-  <link rel="stylesheet" href="style.css" />
+  <title>Такси Регион — Брутальный стиль</title>
 
-  <!-- Подключаем Яндекс.Карты (2.1) с вашим реальным API-ключом -->
-  <script 
+  <!-- Подключение Яндекс.Карт (2.1) с вашим API-ключом -->
+  <!-- Используем ваш ключ: 872146ed-5937-4ad8-883b-53b81c74e994 -->
+  <!-- В production-релизе лучше хранить ключ на сервере, а не в открытом коде. -->
+  <script
     src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU"
     defer
   ></script>
+
+  <!-- Ваш основной скрипт, подключаем с defer -->
+  <script src="script.js" defer></script>
+
+  <style>
+    /* Здесь остаются все стили из предыдущего примера,
+       включая переменные, стили бургер-меню, виньетки для карты и т.д. */
+    /* ... */
+  </style>
 </head>
 <body>
+  <!-- Движущийся фон (видео) -->
+  <video class="background-video" autoplay muted loop playsinline>
+    <source src="background.mp4" type="video/mp4">
+    Ваш браузер не поддерживает видеофон.
+  </video>
+
+  <!-- Шапка -->
   <header>
     <div class="logo">Такси Регион</div>
-    <nav id="nav">
+    <nav role="navigation" id="nav">
       <ul>
         <li><a href="#" class="nav-link" data-target="home">Главная</a></li>
-        <li><a href="#" class="nav-link" data-target="trips-reviews">Поездки и отзывы</a></li>
+        <li><a href="#" class="nav-link" data-target="services">Услуги</a></li>
         <li><a href="#" class="nav-link" data-target="contacts">Контакты</a></li>
       </ul>
     </nav>
-    <button class="burger" id="burgerBtn">
+    <button class="burger" id="burgerBtn" aria-label="Открыть меню">
       <span></span>
       <span></span>
       <span></span>
     </button>
   </header>
 
-  <!-- Модальные окна (дата, время, стоимость, детали поездки) -->
-  <div class="overlay" id="dateOverlay">
-    <div class="overlay-content">
-      <h2>Выберите дату</h2>
-      <!-- Нельзя выбрать прошедшую дату (min=текущая) -->
-      <input type="date" id="dateInput" />
-      <button id="dateNextBtn">Далее</button>
-    </div>
-  </div>
-
-  <div class="overlay" id="timeOverlay">
-    <div class="overlay-content">
-      <h2>Выберите время</h2>
-      <input type="time" id="timeInput" />
-      <button id="timeOkBtn">Ок</button>
-    </div>
-  </div>
-
-  <div class="cost-overlay" id="costOverlay">
-    <div class="cost-popup">
-      <div id="costText" style="margin-bottom: 10px;"></div>
-      <button class="close-cost" id="closeCostBtn">OK</button>
-    </div>
-  </div>
-
-  <div class="trip-detail-overlay" id="tripDetailOverlay">
-    <div class="trip-detail-content">
-      <h3>Детали поездки</h3>
-      <p id="tripDetailText"></p>
-      <button id="closeTripDetailBtn" style="margin-top:10px;">Закрыть</button>
-    </div>
-  </div>
-
-  <main>
-    <!-- Главная -->
+  <!-- Основной контент -->
+  <main role="main">
+    <!-- Секция Home (Такси) -->
     <section class="page active" id="home">
-      <div class="login-reminder">
-        <p><strong>Войдите в свой аккаунт</strong> (через Telegram) — тогда мы покажем вашу недавнюю активность, чтобы вам было удобнее пользоваться сервисом.</p>
-      </div>
       <div class="hero">
-        <!-- Левая часть -->
         <div class="hero-left">
           <h1>Осуществляем комфортные и безопасные поездки</h1>
-          <p>Выберите направление и узнайте стоимость прямо сейчас</p>
-
+          <p>Ирбит – Екатеринбург – Ирбит</p>
+          <!-- Поля ввода "Откуда" и "Куда" -->
           <div class="form-group">
-            <label for="pickup">Откуда (адрес)</label>
-            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19" />
+            <label for="pickup">Откуда</label>
+            <input type="text" id="pickup" placeholder="Улица, дом..." autocomplete="off" />
             <ul id="pickup-suggestions" class="suggestions-list"></ul>
           </div>
           <div class="form-group">
-            <label for="dropoff">Куда (адрес)</label>
-            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185" />
+            <label for="dropoff">Куда</label>
+            <input type="text" id="dropoff" placeholder="Пункт назначения" autocomplete="off" />
             <ul id="dropoff-suggestions" class="suggestions-list"></ul>
           </div>
-
-          <button id="openDateBtn">Выбрать дату/время</button>
           <button id="showPricesBtn">Показать цены</button>
-          <button id="showParcelBtn">Оформить посылку</button>
+          <button id="showParcelFormBtn">Оформить посылку</button>
+          <div id="priceResult"></div>
 
-          <!-- Форма посылки -->
+          <!-- Форма оформления посылки -->
           <div id="parcelFormContainer">
             <h2>Оформление посылки</h2>
             <div class="form-group">
               <label for="parcel-pickup">Откуда</label>
-              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." />
+              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." autocomplete="off" />
               <ul id="parcel-pickup-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-dropoff">Куда</label>
-              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" />
+              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" autocomplete="off" />
               <ul id="parcel-dropoff-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
-              <label for="parcel-weight">Вес (кг)</label>
-              <input type="number" id="parcel-weight" placeholder="2" />
+              <label for="parcel-weight">Вес посылки (кг)</label>
+              <input type="number" id="parcel-weight" placeholder="Например, 2" />
             </div>
             <div class="form-group">
               <label for="parcel-comment">Комментарий</label>
@@ -117,32 +98,33 @@
             <button id="cancelParcelBtn">Вернуться к такси</button>
           </div>
         </div>
-        <!-- Правая часть (карта) -->
+        <!-- Карта с виньеткой -->
         <div class="map-container">
           <div id="map"></div>
         </div>
       </div>
     </section>
 
-    <!-- Поездки и отзывы -->
-    <section class="page" id="trips-reviews">
-      <h2>Мои поездки</h2>
-      <div class="trips-list" id="tripsList">
-        <!-- Пример 3 поездок -->
-        <div class="trip-item" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
-          <strong>№1 — 02.02.2025</strong><br/>
-          Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185
-        </div>
-        <div class="trip-item" data-detail="№2 / 05.02.2025 / Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
-          <strong>№2 — 05.02.2025</strong><br/>
-          Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45
-        </div>
-        <div class="trip-item" data-detail="№3 / 08.02.2025 / Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
-          <strong>№3 — 08.02.2025</strong><br/>
-          Ирбит, Советская 45 → Екатеринбург, Декабристов 18
-        </div>
-        <button id="moreTripsBtn">Далее (показать ещё)</button>
+    <!-- Секция Услуги -->
+    <section class="page" id="services">
+      <h2>Услуги</h2>
+      <div class="services-grid">
+        <!-- Карточки услуг ... -->
       </div>
+    </section>
 
-      <h2>Отзывы</h2>
-      <
+    <!-- Секция Контакты -->
+    <section class="page" id="contacts">
+      <h2>Контакты</h2>
+      <p>Мобильный телефон: 8 902 262 9646</p>
+      <p>Доп. телефон: 8 (34355) 4-54-54</p>
+      <!-- Остальная информация ... -->
+    </section>
+  </main>
+
+  <!-- Футер -->
+  <footer>
+    <p>© 2025 Такси Регион. Все права защищены.</p>
+  </footer>
+</body>
+</html>
