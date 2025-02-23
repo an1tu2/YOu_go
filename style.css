@@ -1,3 +1,4 @@
+/* ====== Общие стили и переменные ====== */
 :root {
   --accent: #ff9800;
   --dark-bg: rgba(0,0,0,0.8);
@@ -20,7 +21,7 @@ body {
   position: relative;
 }
 
-/* Шапка */
+/* ====== Шапка и навигация ====== */
 header {
   background: var(--dark-bg);
   backdrop-filter: blur(4px);
@@ -29,7 +30,8 @@ header {
   justify-content: space-between;
   padding: 10px 30px;
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   z-index: 1000;
   border-bottom: 1px solid var(--accent);
@@ -62,7 +64,7 @@ nav ul li a:hover {
   background: #222;
   border-color: var(--accent);
 }
-/* Бургер */
+/* Бургер-меню */
 .burger {
   display: none;
   flex-direction: column;
@@ -91,7 +93,7 @@ nav ul li a:hover {
   transform: translateY(-11px) rotate(-45deg);
 }
 
-/* Основной контейнер */
+/* ====== Основной контент ====== */
 main {
   margin-top: 70px;
   padding: 20px;
@@ -104,6 +106,7 @@ section.page {
 section.page.active {
   display: block;
 }
+
 /* Футер */
 footer {
   background: var(--dark-bg);
@@ -113,7 +116,7 @@ footer {
   padding: 15px;
 }
 
-/* Главная */
+/* ====== Элементы главной страницы ====== */
 .login-reminder {
   background: rgba(255,255,255,0.05);
   border-left: 4px solid var(--accent);
@@ -177,7 +180,8 @@ footer {
 .hero-left button:hover {
   opacity: 0.8;
 }
-/* Карта */
+
+/* ====== Карта ====== */
 .map-container {
   flex: 1 1 450px;
   height: 400px;
@@ -189,7 +193,8 @@ footer {
   width: 100%;
   height: 100%;
 }
-/* Подсказки */
+
+/* ====== Подсказки ====== */
 .suggestions-list {
   position: absolute;
   background: #222;
@@ -212,7 +217,8 @@ footer {
 .suggestions-list li:hover {
   background: #333;
 }
-/* Форма посылки */
+
+/* ====== Форма посылки ====== */
 #parcelFormContainer {
   display: none;
   background: rgba(255,255,255,0.05);
@@ -227,7 +233,7 @@ footer {
   margin-bottom: 10px;
 }
 
-/* Модальные окна */
+/* ====== Модальные окна ====== */
 .overlay {
   display: none;
   position: fixed;
@@ -253,14 +259,8 @@ footer {
   animation: fadeIn 0.5s ease forwards;
 }
 @keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
 .overlay-content h2 {
   color: var(--accent);
@@ -294,7 +294,8 @@ footer {
 .overlay-content button:hover {
   opacity: 0.8;
 }
-/* Окно стоимости */
+
+/* ====== Окно стоимости ====== */
 .cost-overlay {
   display: none;
   position: fixed;
@@ -335,7 +336,7 @@ footer {
   opacity: 0.8;
 }
 
-/* Секция "Поездки и отзывы" */
+/* ====== Секция "Поездки и отзывы" ====== */
 #trips-reviews h2 {
   text-align: center;
   color: var(--accent);
@@ -386,7 +387,7 @@ footer {
   margin-bottom: 10px;
 }
 
-/* Адаптация под мобильные */
+/* ====== Адаптивные стили ====== */
 @media (max-width: 768px) {
   .burger {
     display: flex;
