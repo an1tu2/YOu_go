@@ -2,111 +2,433 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="description" content="Такси Регион — комфортные и безопасные поездки" />
+  <meta name="description" content="Такси Регион — брутально и современно" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Такси Регион — Поездки и отзывы</title>
-  
-  <!-- Подключаем внешний CSS-файл -->
-  <link rel="stylesheet" href="style.css" />
+  <title>Такси Регион — Брутальный стиль</title>
 
-  <!-- Подключаем Яндекс.Карты (2.1) с реальным API-ключом -->
-  <script 
-    src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU" 
+  <!-- Подключаем Яндекс.Карты (3) с вашим API-ключом -->
+  <!-- lang=en_US, ru_RU и т.д. — для демонстрации можно менять -->
+  <script
+    src="https://api-maps.yandex.ru/2.1/?apikey=872146ed-5937-4ad8-883b-53b81c74e994&lang=ru_RU"
     defer
   ></script>
+
+  <!-- Основной скрипт с defer -->
+  <script src="script.js" defer></script>
+
+  <style>
+    /* 
+      ==========================
+      БАЗОВЫЕ СТИЛИ И ПЕРЕМЕННЫЕ
+      ==========================
+      — Брутальный тёмный фон, жёсткие акценты.
+    */
+    :root {
+      --accent: #ff9800;               /* Акцентный цвет */
+      --dark-bg: rgba(0, 0, 0, 0.9);   /* Тёмный фон */
+      --text-color: #fff;
+      --subtext-color: #ccc;
+      --transition-fast: 0.2s;
+      --transition-slow: 0.7s;
+    }
+
+    * {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: var(--text-color);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* 
+      =========
+      ВИДЕОФОН (пример, если нужно)
+      =========
+      Можно раскомментировать, если хотите настоящий «движущийся фон».
+    */
+    /*
+    .background-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      opacity: 0.3;
+    }
+    */
+
+    /* 
+      =======================================
+      HEADER, БУРГЕР-МЕНЮ И ОСНОВНАЯ НАВИГАЦИЯ
+      =======================================
+    */
+    header {
+      background-color: var(--dark-bg);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 30px;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--accent);
+    }
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+    nav[role="navigation"] {
+      display: flex;
+      align-items: center;
+    }
+    nav ul {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+    }
+    nav ul li a {
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color var(--transition-fast);
+      border: 1px solid transparent;
+    }
+    nav ul li a:hover {
+      background-color: #222;
+      border-color: var(--accent);
+    }
+    /* Бургер-кнопка */
+    .burger {
+      display: none;
+      flex-direction: column;
+      justify-content: space-around;
+      width: 30px;
+      height: 25px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 1100;
+    }
+    .burger span {
+      width: 100%;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    /* Анимация бургера */
+    .burger.active span:nth-child(1) {
+      transform: translateY(11px) rotate(45deg);
+    }
+    .burger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .burger.active span:nth-child(3) {
+      transform: translateY(-11px) rotate(-45deg);
+    }
+
+    /* 
+      =========
+      ОСНОВНОЙ КОНТЕЙНЕР
+      =========
+    */
+    main[role="main"] {
+      margin-top: 90px; /* отступ под шапку */
+      padding: 20px;
+    }
+    .page {
+      display: none;
+      min-height: 80vh;
+      padding: 40px 20px;
+      transition: all var(--transition-fast);
+    }
+    .page.active {
+      display: block;
+    }
+
+    /* 
+      ===============
+      HOME (пример)
+      ===============
+    */
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    .hero-left {
+      flex: 1 1 400px;
+      max-width: 600px;
+    }
+    .hero-left h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: var(--accent);
+    }
+    .hero-left p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: var(--subtext-color);
+      line-height: 1.5;
+    }
+    /* Поля ввода */
+    .form-group {
+      margin-bottom: 15px;
+      position: relative;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: none;
+      border-bottom: 2px solid #555;
+      background-color: transparent;
+      color: var(--text-color);
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+    .form-group input::placeholder {
+      color: #999;
+    }
+    /* Кнопки */
+    .hero-left button {
+      background-color: var(--accent);
+      color: #000;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      margin-right: 10px;
+      margin-top: 10px;
+    }
+    .hero-left button:hover {
+      opacity: 0.8;
+      transform: scale(1.02);
+    }
+    /* Форма посылки */
+    #parcelFormContainer {
+      display: none;
+      margin-top: 20px;
+      background-color: rgba(0,0,0,0.8);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 15px;
+    }
+    #parcelFormContainer h2 {
+      font-size: 1.4rem;
+      color: var(--accent);
+      margin-bottom: 15px;
+    }
+
+    /* 
+      ================
+      СТИЛИ ПОДСКАЗОК
+      ================
+    */
+    .suggestions-list {
+      list-style: none;
+      margin: 0; padding: 0;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 4px;
+      max-height: 180px;
+      overflow-y: auto;
+      position: absolute;
+      width: 100%;
+      z-index: 10;
+      display: none;
+    }
+    .suggestions-list li {
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .suggestions-list li:hover {
+      background-color: #333;
+    }
+
+    /* 
+      ================
+      КАРТА
+      ================
+    */
+    .map-container {
+      flex: 1 1 300px;
+      max-width: 600px;
+      position: relative;
+      height: 450px;
+      margin: auto;
+      overflow: hidden;
+      will-change: transform; /* Оптимизация перерисовки */
+    }
+    /* Сам блок карты */
+    #map {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 
+      =======
+      УСЛУГИ
+      (примерно)
+      =======
+    */
+
+    /* 
+      ===========
+      КОНТАКТЫ
+      ===========
+    */
+    /* Пример: можно оформить списки, иконки и т.д. */
+
+    /* 
+      =======
+      ФУТЕР
+      =======
+    */
+    footer {
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      text-align: center;
+      padding: 20px 10px;
+      border-top: 1px solid var(--accent);
+      margin-top: 40px;
+    }
+    footer p {
+      font-size: 0.9rem;
+      color: #ccc;
+    }
+
+    /* 
+      =======================
+      МЕДИА ЗАПРОСЫ (МОБИЛЬНЫЕ)
+      =======================
+    */
+    @media (max-width: 768px) {
+      header {
+        padding: 10px 20px;
+      }
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+        display: none;
+      }
+      nav.active ul {
+        display: flex;
+      }
+      .burger {
+        display: flex;
+      }
+      .hero {
+        flex-direction: column;
+      }
+      .map-container {
+        width: 100%;
+        height: 300px;
+        margin-top: 20px;
+      }
+      main[role="main"] {
+        padding: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Пример: фоновое видео (раскомментировать, если нужно)
+  <video class="background-video" autoplay muted loop playsinline>
+    <source src="background.mp4" type="video/mp4">
+    Ваш браузер не поддерживает видеофон.
+  </video>
+  -->
+
+  <!-- Шапка -->
   <header>
     <div class="logo">Такси Регион</div>
-    <nav id="nav">
+    <!-- ARIA-роль навигации -->
+    <nav role="navigation" id="nav">
       <ul>
         <li><a href="#" class="nav-link" data-target="home">Главная</a></li>
         <li><a href="#" class="nav-link" data-target="trips-reviews">Поездки и отзывы</a></li>
         <li><a href="#" class="nav-link" data-target="contacts">Контакты</a></li>
       </ul>
     </nav>
-    <button class="burger" id="burgerBtn">
+    <button class="burger" id="burgerBtn" aria-label="Открыть меню">
       <span></span>
       <span></span>
       <span></span>
     </button>
   </header>
 
-  <!-- Модальные окна -->
-  <div class="overlay" id="dateOverlay">
-    <div class="overlay-content">
-      <h2>Выберите дату</h2>
-      <!-- Атрибут min задаётся через JS, чтобы нельзя было выбрать прошедшую дату -->
-      <input type="date" id="dateInput" />
-      <button id="dateNextBtn">Далее</button>
-    </div>
-  </div>
-
-  <div class="overlay" id="timeOverlay">
-    <div class="overlay-content">
-      <h2>Выберите время</h2>
-      <input type="time" id="timeInput" />
-      <button id="timeOkBtn">Ок</button>
-    </div>
-  </div>
-
-  <div class="cost-overlay" id="costOverlay">
-    <div class="cost-popup">
-      <div id="costText" style="margin-bottom: 10px;"></div>
-      <button class="close-cost" id="closeCostBtn">OK</button>
-    </div>
-  </div>
-
-  <div class="trip-detail-overlay" id="tripDetailOverlay">
-    <div class="trip-detail-content">
-      <h3>Детали поездки</h3>
-      <p id="tripDetailText"></p>
-      <button id="closeTripDetailBtn" style="margin-top:10px;">Закрыть</button>
-    </div>
-  </div>
-
-  <main>
-    <!-- Главная страница -->
-    <section class="page active" id="home">
-      <div class="login-reminder">
-        <p><strong>Войдите в свой аккаунт</strong> (через Telegram) — тогда мы покажем вашу недавнюю активность, чтобы вам было удобнее пользоваться сервисом.</p>
-      </div>
+  <!-- Основной контент -->
+  <main role="main">
+    <!-- Секция Home -->
+    <section class="page active" id="home" aria-label="Главная">
       <div class="hero">
+        <!-- Левая часть: форма такси -->
         <div class="hero-left">
           <h1>Осуществляем комфортные и безопасные поездки</h1>
-          <p>Выберите направление и узнайте стоимость прямо сейчас</p>
+          <p>Ирбит – Екатеринбург – Ирбит</p>
 
           <div class="form-group">
             <label for="pickup">Откуда (адрес)</label>
-            <input type="text" id="pickup" placeholder="Ирбит, Лесная 19" />
+            <input type="text" id="pickup" placeholder="Улица, дом..." autocomplete="off" />
             <ul id="pickup-suggestions" class="suggestions-list"></ul>
           </div>
           <div class="form-group">
             <label for="dropoff">Куда (адрес)</label>
-            <input type="text" id="dropoff" placeholder="Екатеринбург, Волгоградская 185" />
+            <input type="text" id="dropoff" placeholder="Пункт назначения" autocomplete="off" />
             <ul id="dropoff-suggestions" class="suggestions-list"></ul>
           </div>
 
           <button id="openDateBtn">Выбрать дату/время</button>
           <button id="showPricesBtn">Показать цены</button>
-          <button id="showParcelBtn">Оформить посылку</button>
+          <button id="showParcelFormBtn">Оформить посылку</button>
 
           <!-- Форма оформления посылки -->
           <div id="parcelFormContainer">
             <h2>Оформление посылки</h2>
             <div class="form-group">
               <label for="parcel-pickup">Откуда</label>
-              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." />
+              <input type="text" id="parcel-pickup" placeholder="Улица, дом..." autocomplete="off" />
               <ul id="parcel-pickup-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
               <label for="parcel-dropoff">Куда</label>
-              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" />
+              <input type="text" id="parcel-dropoff" placeholder="Пункт назначения" autocomplete="off" />
               <ul id="parcel-dropoff-suggestions" class="suggestions-list"></ul>
             </div>
             <div class="form-group">
-              <label for="parcel-weight">Вес (кг)</label>
-              <input type="number" id="parcel-weight" placeholder="2" />
+              <label for="parcel-weight">Вес посылки (кг)</label>
+              <input type="number" id="parcel-weight" placeholder="Например, 2" />
             </div>
             <div class="form-group">
               <label for="parcel-comment">Комментарий</label>
@@ -116,7 +438,8 @@
             <button id="cancelParcelBtn">Вернуться к такси</button>
           </div>
         </div>
-        <!-- Карта -->
+
+        <!-- Правая часть: Яндекс.Карта с виньеткой -->
         <div class="map-container">
           <div id="map"></div>
         </div>
@@ -124,42 +447,42 @@
     </section>
 
     <!-- Секция "Поездки и отзывы" -->
-    <section class="page" id="trips-reviews">
+    <section class="page" id="trips-reviews" aria-label="Поездки и отзывы">
       <h2>Мои поездки</h2>
       <div class="trips-list" id="tripsList">
         <!-- Пример 3 поездок -->
-        <div class="trip-item" data-detail="№1 / 02.02.2025 / Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
-          <strong>№1 — 02.02.2025</strong><br/>
+        <div class="trip-item" data-detail="02.02.2025: Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185">
+          №1 — 02.02.2025<br/>
           Ирбит, Ленина 100 → Екатеринбург, Волгоградская 185
         </div>
-        <div class="trip-item" data-detail="№2 / 05.02.2025 / Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
-          <strong>№2 — 05.02.2025</strong><br/>
+        <div class="trip-item" data-detail="05.02.2025: Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45">
+          №2 — 05.02.2025<br/>
           Екатеринбург, Академика Бардина 4А → Ирбит, Советская 45
         </div>
-        <div class="trip-item" data-detail="№3 / 08.02.2025 / Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
-          <strong>№3 — 08.02.2025</strong><br/>
+        <div class="trip-item" data-detail="08.02.2025: Ирбит, Советская 45 → Екатеринбург, Декабристов 18">
+          №3 — 08.02.2025<br/>
           Ирбит, Советская 45 → Екатеринбург, Декабристов 18
         </div>
         <button id="moreTripsBtn">Далее (показать ещё)</button>
       </div>
 
       <h2>Отзывы</h2>
-      <div class="reviews-list" id="reviewsList">
+      <div class="reviews-list">
         <div class="review-item">
           <p>“Спасибо за быструю подачу и аккуратную езду!”</p>
         </div>
         <div class="review-item">
-          <p>“Заказал посылку, всё дошло вовремя – отличный сервис!”</p>
+          <p>“Заказал посылку, всё дошло вовремя, спасибо.”</p>
         </div>
       </div>
     </section>
 
     <!-- Секция "Контакты" -->
-    <section class="page" id="contacts">
+    <section class="page" id="contacts" aria-label="Контакты">
       <h2>Контакты</h2>
-      <p>Мобильный: 8 902 262 9646</p>
+      <p>Мобильный телефон: 8 902 262 9646</p>
       <p>Доп. телефон: 8 (34355) 4-54-54</p>
-      <p>Бесплатные адреса в Екатеринбурге:</p>
+      <p>Бесплатные адреса в г. Екатеринбург:</p>
       <ul>
         <li>Волгоградская 185, 187, 189</li>
         <li>Академика Бардина 4 "А"</li>
@@ -174,8 +497,5 @@
   <footer>
     <p>© 2025 Такси Регион. Все права защищены.</p>
   </footer>
-
-  <!-- Подключаем основной скрипт как ES-модуль -->
-  <script type="module" src="script.js"></script>
 </body>
 </html>
