@@ -1,39 +1,48 @@
-// Используем ES-модульный подход через IIFE для изоляции кода
-(function() {
-  let currentSection = 'home';
-  let myMap, pickupPlacemark, dropoffPlacemark;
-  let selectedDate = null;
-  let selectedTime = null;
+// Пример "брутальной" логики с подсказками, расчетом цены и т.д.
+// Внимание: Это демо. Для реального проекта нужно всё протестировать.
+// Можете разбивать на модули (ES-модули) и т.д.
 
-  // Адреса, для которых стоимость = 0 (бесплатные адреса)
+(function() {
+  // Глобальные (внутри IIFE) переменные
+  let currentSection = 'home';
+  let myMap;
+  let pickupPlacemark, dropoffPlacemark;
+
+  // Список "бесплатных" адресов
   const freeAddresses = [
     'Екатеринбург, Волгоградская 185',
     'Екатеринбург, Волгоградская 187',
     'Екатеринбург, Волгоградская 189'
   ];
 
-  // Счётчик для кнопки "Далее"
+  // Счётчик для кнопки "Далее (показать ещё)"
   let tripsLoadCount = 0;
-  const maxTripsLoad = 2;
+  const maxTripsLoad = 2; // Покажем ещё 2 раза, затем скажем "Больше поездок нет!"
 
+  // При загрузке DOM
   document.addEventListener('DOMContentLoaded', () => {
     initBurger();
-    initNavigation();
-    initMapYandex();
-    initDateTimeOverlays();
+    initNavLinks();
+    initMap();
+    initSuggestions();
+    initDateTimeOverlay();
     initCostOverlay();
-    initTripDetails();
     initParcelForm();
     initShowPrices();
-    initSuggestions();
 
-    // Ограничение выбора даты: нельзя выбирать дату, которая уже прошла
+    // Нельзя выбрать прошедшую дату
     const dateInput = document.getElementById('dateInput');
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
+
+    // Кнопка "Далее (показать ещё)" в поездках
+    const moreTripsBtn = document.getElementById('moreTripsBtn');
+    moreTripsBtn.addEventListener('click', loadMoreTrips);
   });
 
-  // ====== Бургер-меню ======
+  // =========================
+  // БУРГЕР-МЕНЮ
+  // =========================
   function initBurger() {
     const burgerBtn = document.getElementById('burgerBtn');
     const nav = document.getElementById('nav');
@@ -43,34 +52,37 @@
     });
   }
 
-  // ====== Навигация ======
-  function initNavigation() {
-    const links = document.querySelectorAll('.nav-link');
-    links.forEach(link => {
+  // =========================
+  // НАВИГАЦИЯ ПО СЕКЦИЯМ
+  // =========================
+  function initNavLinks() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const targetId = link.getAttribute('data-target');
         switchSection(targetId);
-        document.getElementById('burgerBtn').classList.remove('active');
-        document.getElementById('nav').classList.remove('active');
       });
     });
   }
   function switchSection(targetId) {
-    const oldSec = document.getElementById(currentSection);
-    const newSec = document.getElementById(targetId);
-    if (oldSec) oldSec.classList.remove('active');
-    if (newSec) newSec.classList.add('active');
+    const oldSection = document.getElementById(currentSection);
+    const newSection = document.getElementById(targetId);
+    if (oldSection) oldSection.classList.remove('active');
+    if (newSection) newSection.classList.add('active');
     currentSection = targetId;
   }
 
-  // ====== Инициализация Яндекс.Карты ======
-  function initMapYandex() {
+  // =========================
+  // ЯНДЕКС.КАРТА
+  // =========================
+  function initMap() {
     if (typeof ymaps === 'undefined') {
       console.error('Yandex Maps API не загрузился');
       return;
     }
     ymaps.ready(() => {
+      // Создаём карту
       myMap = new ymaps.Map('map', {
         center: [56.838011, 60.597465],
         zoom: 9,
@@ -78,14 +90,15 @@
       });
       myMap.setType('yandex#hybrid');
 
+      // Инициируем метки (пока по умолчанию на центр)
       pickupPlacemark = new ymaps.Placemark(
         [56.838011, 60.597465],
-        { hintContent: 'Точка отправления' },
+        { hintContent: 'Откуда' },
         { preset: 'islands#redIcon' }
       );
       dropoffPlacemark = new ymaps.Placemark(
         [56.838011, 60.597465],
-        { hintContent: 'Точка прибытия' },
+        { hintContent: 'Куда' },
         { preset: 'islands#blueIcon' }
       );
       myMap.geoObjects.add(pickupPlacemark);
@@ -93,180 +106,19 @@
     });
   }
 
-  // ====== Модальные окна для даты и времени ======
-  function initDateTimeOverlays() {
-    const openDateBtn = document.getElementById('openDateBtn');
-    const dateOverlay = document.getElementById('dateOverlay');
-    const timeOverlay = document.getElementById('timeOverlay');
-    const dateNextBtn = document.getElementById('dateNextBtn');
-    const timeOkBtn = document.getElementById('timeOkBtn');
-    const dateInput = document.getElementById('dateInput');
-    const timeInput = document.getElementById('timeInput');
-
-    // Если кнопка для открытия даты не найдена, можно добавить её в разметку
-    if (openDateBtn) {
-      openDateBtn.addEventListener('click', () => {
-        dateOverlay.classList.add('active');
-      });
-    } else {
-      // Альтернативно, открываем дату сразу, если кнопка отсутствует
-      dateOverlay.classList.add('active');
-    }
-
-    dateNextBtn.addEventListener('click', () => {
-      if (!dateInput.value) {
-        alert('Выберите дату!');
-        return;
-      }
-      selectedDate = dateInput.value;
-      dateOverlay.classList.remove('active');
-      timeOverlay.classList.add('active');
-    });
-
-    timeOkBtn.addEventListener('click', () => {
-      if (!timeInput.value) {
-        alert('Выберите время!');
-        return;
-      }
-      selectedTime = timeInput.value;
-      timeOverlay.classList.remove('active');
-      alert(`Вы выбрали: ${selectedDate} / ${selectedTime}`);
-    });
-  }
-
-  // ====== Всплывающее окно стоимости ======
-  function initCostOverlay() {
-    const costOverlay = document.getElementById('costOverlay');
-    const closeCostBtn = document.getElementById('closeCostBtn');
-    closeCostBtn.addEventListener('click', () => {
-      costOverlay.classList.remove('active');
-    });
-  }
-  function showCostOverlay(text) {
-    const costOverlay = document.getElementById('costOverlay');
-    const costText = document.getElementById('costText');
-    costText.textContent = text;
-    costOverlay.classList.add('active');
-  }
-
-  // ====== Детали поездки и кнопка "Далее" ======
-  function initTripDetails() {
-    const trips = document.querySelectorAll('.trip-item');
-    const tripDetailOverlay = document.getElementById('tripDetailOverlay');
-    const tripDetailText = document.getElementById('tripDetailText');
-    const closeTripDetailBtn = document.getElementById('closeTripDetailBtn');
-
-    trips.forEach(trip => {
-      trip.addEventListener('click', () => {
-        const detail = trip.dataset.detail || 'Нет данных...';
-        tripDetailText.textContent = detail;
-        tripDetailOverlay.classList.add('active');
-      });
-    });
-    closeTripDetailBtn.addEventListener('click', () => {
-      tripDetailOverlay.classList.remove('active');
-    });
-
-    const moreTripsBtn = document.getElementById('moreTripsBtn');
-    moreTripsBtn.addEventListener('click', () => {
-      loadMoreTrips();
-    });
-  }
-
-  function loadMoreTrips() {
-    if (tripsLoadCount >= maxTripsLoad) {
-      alert('Больше поездок нет!');
-      return;
-    }
-    tripsLoadCount++;
-    const tripsList = document.getElementById('tripsList');
-    const newTrip = document.createElement('div');
-    newTrip.classList.add('trip-item');
-    newTrip.dataset.detail = `№${tripsLoadCount + 3} / 12.02.2025 / Пример Адреса → Пример Адреса`;
-    newTrip.innerHTML = `<strong>№${tripsLoadCount + 3} — 12.02.2025</strong><br/>
-                         Пример Адреса → Пример Адреса`;
-    tripsList.insertBefore(newTrip, tripsList.lastElementChild);
-
-    newTrip.addEventListener('click', () => {
-      const detail = newTrip.dataset.detail;
-      document.getElementById('tripDetailText').textContent = detail;
-      document.getElementById('tripDetailOverlay').classList.add('active');
-    });
-  }
-
-  // ====== Форма посылки ======
-  function initParcelForm() {
-    const showParcelBtn = document.getElementById('showParcelBtn');
-    const parcelFormContainer = document.getElementById('parcelFormContainer');
-    const cancelParcelBtn = document.getElementById('cancelParcelBtn');
-    const sendParcelBtn = document.getElementById('sendParcelBtn');
-
-    showParcelBtn.addEventListener('click', () => {
-      parcelFormContainer.style.display = 'block';
-    });
-    cancelParcelBtn.addEventListener('click', () => {
-      parcelFormContainer.style.display = 'none';
-    });
-    sendParcelBtn.addEventListener('click', async () => {
-      const pPickup = document.getElementById('parcel-pickup').value.trim();
-      const pDropoff = document.getElementById('parcel-dropoff').value.trim();
-      const pWeight = document.getElementById('parcel-weight').value.trim();
-      if (!pPickup || !pDropoff || !pWeight) {
-        alert('Заполните все поля для посылки.');
-        return;
-      }
-      const fromCoords = await geocodeRealAddress(pPickup);
-      const toCoords = await geocodeRealAddress(pDropoff);
-      if (fromCoords && toCoords) {
-        if (isFreeAddress(pPickup) || isFreeAddress(pDropoff)) {
-          showCostOverlay(`Бесплатная доставка!`);
-        } else {
-          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
-          const cost = Math.round(distKm * 80 + parseFloat(pWeight) * 5);
-          showCostOverlay(`Стоимость посылки: ${cost} руб.`);
-        }
-      }
-    });
-  }
-
-  // ====== Показать цены для такси ======
-  function initShowPrices() {
-    const showPricesBtn = document.getElementById('showPricesBtn');
-    showPricesBtn.addEventListener('click', async () => {
-      const pickup = document.getElementById('pickup').value.trim();
-      const dropoff = document.getElementById('dropoff').value.trim();
-      if (!pickup || !dropoff) {
-        alert('Укажите адреса (Откуда / Куда).');
-        return;
-      }
-      const fromCoords = await geocodeRealAddress(pickup);
-      const toCoords = await geocodeRealAddress(dropoff);
-      if (fromCoords && toCoords) {
-        pickupPlacemark.geometry.setCoordinates(fromCoords);
-        dropoffPlacemark.geometry.setCoordinates(toCoords);
-        myMap.setBounds(myMap.geoObjects.getBounds(), { checkZoomRange: true });
-        if (isFreeAddress(pickup) || isFreeAddress(dropoff)) {
-          showCostOverlay(`Поездка бесплатная!`);
-        } else {
-          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
-          const price = Math.round(distKm * 100);
-          showCostOverlay(`Стоимость поездки: ${price} руб.`);
-        }
-      }
-    });
-  }
-
-  // ====== Подсказки через ymaps.suggest ======
+  // =========================
+  // ПОДСКАЗКИ (ymaps.suggest)
+  // =========================
   function initSuggestions() {
-    setupYmapsSuggestions('pickup', 'pickup-suggestions');
-    setupYmapsSuggestions('dropoff', 'dropoff-suggestions');
-    setupYmapsSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
-    setupYmapsSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
+    setupSuggestions('pickup', 'pickup-suggestions');
+    setupSuggestions('dropoff', 'dropoff-suggestions');
+    setupSuggestions('parcel-pickup', 'parcel-pickup-suggestions');
+    setupSuggestions('parcel-dropoff', 'parcel-dropoff-suggestions');
   }
-
-  function setupYmapsSuggestions(inputId, listId) {
+  function setupSuggestions(inputId, listId) {
     const input = document.getElementById(inputId);
     const list = document.getElementById(listId);
+
     input.addEventListener('input', debounce(async () => {
       const val = input.value.trim();
       if (val.length < 3) {
@@ -293,7 +145,7 @@
         });
         list.style.display = 'block';
       } catch (err) {
-        console.error('Ошибка при вызове ymaps.suggest:', err);
+        console.error('Ошибка suggest:', err);
       }
     }, 300));
 
@@ -303,7 +155,6 @@
       }
     });
   }
-
   function debounce(fn, delay) {
     let timer;
     return function(...args) {
@@ -312,26 +163,181 @@
     };
   }
 
-  // ====== Геокодирование реального адреса ======
-  async function geocodeRealAddress(address) {
-    if (typeof ymaps === 'undefined') return null;
+  // =========================
+  // ДАТА/ВРЕМЯ (модальные окна)
+  // =========================
+  function initDateTimeOverlay() {
+    const openDateBtn = document.getElementById('openDateBtn');
+    const dateOverlay = document.getElementById('dateOverlay');
+    const timeOverlay = document.getElementById('timeOverlay');
+    const dateNextBtn = document.getElementById('dateNextBtn');
+    const timeOkBtn = document.getElementById('timeOkBtn');
+
+    openDateBtn.addEventListener('click', () => {
+      dateOverlay.classList.add('active');
+    });
+
+    dateNextBtn.addEventListener('click', () => {
+      const dateValue = document.getElementById('dateInput').value;
+      if (!dateValue) {
+        alert('Выберите дату!');
+        return;
+      }
+      // Запоминаем выбранную дату
+      selectedDate = dateValue;
+      dateOverlay.classList.remove('active');
+      timeOverlay.classList.add('active');
+    });
+
+    timeOkBtn.addEventListener('click', () => {
+      const timeValue = document.getElementById('timeInput').value;
+      if (!timeValue) {
+        alert('Выберите время!');
+        return;
+      }
+      selectedTime = timeValue;
+      timeOverlay.classList.remove('active');
+      alert(`Вы выбрали дату: ${selectedDate}, время: ${selectedTime}`);
+    });
+  }
+
+  // =========================
+  // ОКНО СТОИМОСТИ
+  // =========================
+  function initCostOverlay() {
+    const costOverlay = document.getElementById('costOverlay');
+    const closeCostBtn = document.getElementById('closeCostBtn');
+    closeCostBtn.addEventListener('click', () => {
+      costOverlay.classList.remove('active');
+    });
+  }
+  function showCostOverlay(text) {
+    const costOverlay = document.getElementById('costOverlay');
+    const costText = document.getElementById('costText');
+    costText.textContent = text;
+    costOverlay.classList.add('active');
+  }
+
+  // =========================
+  // ФОРМА ПОСЫЛКИ
+  // =========================
+  function initParcelForm() {
+    const showParcelFormBtn = document.getElementById('showParcelFormBtn');
+    const parcelFormContainer = document.getElementById('parcelFormContainer');
+    const cancelParcelBtn = document.getElementById('cancelParcelBtn');
+    const sendParcelBtn = document.getElementById('sendParcelBtn');
+
+    showParcelFormBtn.addEventListener('click', () => {
+      document.getElementById('priceResult')?.textContent = '';
+      parcelFormContainer.style.display = 'block';
+    });
+    cancelParcelBtn.addEventListener('click', () => {
+      parcelFormContainer.style.display = 'none';
+    });
+    sendParcelBtn.addEventListener('click', async () => {
+      const fromAddr = document.getElementById('parcel-pickup').value.trim();
+      const toAddr = document.getElementById('parcel-dropoff').value.trim();
+      const weight = parseFloat(document.getElementById('parcel-weight').value.trim() || '0');
+
+      if (!fromAddr || !toAddr || !weight) {
+        alert('Заполните все поля для посылки.');
+        return;
+      }
+      // Геокодируем
+      const fromCoords = await geocodeAddress(fromAddr);
+      const toCoords = await geocodeAddress(toAddr);
+      if (fromCoords && toCoords) {
+        // Проверим "бесплатные" адреса
+        if (isFreeAddress(fromAddr) || isFreeAddress(toAddr)) {
+          showCostOverlay('Бесплатная доставка!');
+        } else {
+          const distKm = ymaps.coordSystem.geo.getDistance(fromCoords, toCoords) / 1000;
+          const cost = Math.round(distKm * 80 + weight * 5);
+          showCostOverlay(`Стоимость посылки: ${cost} руб.`);
+        }
+      }
+    });
+  }
+
+  // =========================
+  // КНОПКА "ПОКАЗАТЬ ЦЕНЫ" (такси)
+  // =========================
+  function initShowPrices() {
+    const showPricesBtn = document.getElementById('showPricesBtn');
+    showPricesBtn.addEventListener('click', async () => {
+      const pickupValue = document.getElementById('pickup').value.trim();
+      const dropoffValue = document.getElementById('dropoff').value.trim();
+      if (!pickupValue || !dropoffValue) {
+        alert('Введите корректные адреса "Откуда" и "Куда".');
+        return;
+      }
+      const pickupCoords = await geocodeAddress(pickupValue);
+      const dropoffCoords = await geocodeAddress(dropoffValue);
+      if (pickupCoords && dropoffCoords) {
+        pickupPlacemark.geometry.setCoordinates(pickupCoords);
+        dropoffPlacemark.geometry.setCoordinates(dropoffCoords);
+        myMap.setBounds(myMap.geoObjects.getBounds(), { checkZoomRange: true });
+        // Если один из адресов бесплатный, стоимость = 0
+        if (isFreeAddress(pickupValue) || isFreeAddress(dropoffValue)) {
+          showCostOverlay('Поездка бесплатная!');
+        } else {
+          const distanceKm = ymaps.coordSystem.geo.getDistance(pickupCoords, dropoffCoords) / 1000;
+          const price = Math.round(distanceKm * 100); // 100 руб/км
+          showCostOverlay(`Примерная стоимость поездки: ~${price} руб.`);
+        }
+      }
+    });
+  }
+
+  // =========================
+  // ДОБАВЛЕНИЕ ПОЕЗДОК (кнопка "Далее")
+  // =========================
+  function loadMoreTrips() {
+    if (tripsLoadCount >= maxTripsLoad) {
+      alert('Больше поездок нет!');
+      return;
+    }
+    tripsLoadCount++;
+    const tripsList = document.getElementById('tripsList');
+    const newTrip = document.createElement('div');
+    newTrip.classList.add('trip-item');
+    newTrip.dataset.detail = `12.02.2025: Пример Адреса → Пример Адреса`;
+    newTrip.innerHTML = `№${tripsLoadCount + 3} — 12.02.2025<br/>
+                         Пример Адреса → Пример Адреса`;
+    // Добавляем перед кнопкой
+    tripsList.insertBefore(newTrip, tripsList.lastElementChild);
+
+    newTrip.addEventListener('click', () => {
+      document.getElementById('tripDetailText').textContent = newTrip.dataset.detail;
+      document.getElementById('tripDetailOverlay').classList.add('active');
+    });
+  }
+
+  // =========================
+  // ГЕОКОДИРОВАНИЕ (через ymaps.geocode)
+  // =========================
+  async function geocodeAddress(address) {
     try {
       const result = await ymaps.geocode(address, { results: 1 });
       if (result.geoObjects.getLength()) {
         return result.geoObjects.get(0).geometry.getCoordinates();
       } else {
-        alert(`Адрес не найден: ${address}`);
+        alert(`Адрес "${address}" не найден.`);
         return null;
       }
     } catch (err) {
-      console.error('Ошибка геокодирования:', err);
-      alert('Произошла ошибка при геокодировании.');
+      console.error(err);
+      alert('Произошла ошибка при геокодировании. Убедитесь, что адрес введён корректно.');
       return null;
     }
   }
 
-  // ====== Проверка бесплатных адресов ======
+  // =========================
+  // Проверка "бесплатных" адресов
+  // =========================
   function isFreeAddress(addr) {
-    return freeAddresses.some(freeAddr => addr.toLowerCase().includes(freeAddr.toLowerCase()));
+    return freeAddresses.some(freeAddr =>
+      addr.toLowerCase().includes(freeAddr.toLowerCase())
+    );
   }
 })();
